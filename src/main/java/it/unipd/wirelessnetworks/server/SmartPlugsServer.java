@@ -14,7 +14,6 @@ public class SmartPlugsServer {
 
     public static int MAX_WATT_COUNTER = 3000;
 
-
     public static void main(String[] args) throws IOException {
         AtomicInteger wattCounter = new AtomicInteger(0);
         PriorityQueue<String> clientsQueue;
@@ -27,13 +26,9 @@ public class SmartPlugsServer {
                DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
                (new ClientRequestDelegate(socket, dataInputStream, dataOutputStream, wattCounter)).start();
             }
-            catch (Exception ignored) {
-
-            }
+            catch (Exception ignored) {}
         }
-
     }
-
 }
 
 class ClientRequestDelegate extends Thread {
@@ -76,5 +71,4 @@ class ClientRequestDelegate extends Thread {
             e.printStackTrace();
         }
     }
-
 }
