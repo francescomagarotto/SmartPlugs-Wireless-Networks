@@ -39,15 +39,24 @@ public class SmartPlugsClients {
                         String response = inputStream.readUTF();
                         JSONObject responseJSON = new JSONObject(response);
                         String action = responseJSON.getString("type");
+
                         switch(action) {
                             case "OK":
                                 // connects to power grid
+                                // 
                                 int value = responseJSON.getInt("next");
                                 break;
                             case "EXCEEDED":
+                                
+                                // OGNI NEXT TEMPO PROVO A RICONNETTERMI
                                 // hold on, notify user
                                 break;
                         }
+
+                        inputStream.close();
+                        outputStream.close();
+                        socket.close();
+
                     } catch (IOException e) { 
                         e.printStackTrace(); 
                     }
