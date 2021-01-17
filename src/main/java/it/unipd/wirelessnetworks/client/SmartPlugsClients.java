@@ -55,15 +55,16 @@ public class SmartPlugsClients extends WebSocketClient{
             switch(type) {
                 case "OK":
                     // server recognizes on its own the client is already connected and disconnects it
+                    // here the client waits for a while and disconnects and tells the server so
                     try {
                         Thread.sleep((int)(Math.random()*10000));
                     } catch (Exception e) {
                         System.out.println("[CLIENT-"+id+"] Something went wrong while connected to grid "+e.getMessage());
                     }
-                    
                     send("{'id':'"+id+"', 'name': '"+name+"', 'watts': '"+watts+"'}");
                     break;
                 case "EXCEEDED":
+                    // here the client waits for a while and tries to reconnect
                     try {
                         Thread.sleep((int)(Math.random()*10000));
                     } catch (Exception e) {
@@ -72,6 +73,7 @@ public class SmartPlugsClients extends WebSocketClient{
                     send("{'id':'"+id+"', 'name': '"+name+"', 'watts': '"+watts+"'}");
                     break;
                 case "DISCONNECT":
+                    // here the client closes the connection with the server
                     close();
                     break;
             }
