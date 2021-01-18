@@ -48,7 +48,7 @@ public class SmartPlugsClients extends WebSocketClient{
 	@Override
 	public void onMessage(String message) {
         JSONObject obj = new JSONObject(message);
-        String messageId = obj.getString(id);
+        String messageId = obj.getString("id");
         String type = obj.getString("type");
         // if the message sent from the server is to this client
         if(messageId.equals(id)) {  
@@ -117,39 +117,3 @@ public class SmartPlugsClients extends WebSocketClient{
 
     }
 }
-
-/*
-// preparing message to send to the server
-                        JSONObject obj = new JSONObject();
-                        int watt = (int)(Math.random()*2000)+1; // between 1 and 2000
-                        obj.put("watt", Integer.valueOf(watt));
-                        String message = obj.toString();
-                        
-                        // connection and sending message
-                        Socket socket = new Socket(InetAddress.getLoopbackAddress(), 5056);
-                        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-                        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-                        outputStream.writeBytes(message);
-
-                        // receving response and corresponding behavior
-                        String response = inputStream.readUTF();
-                        JSONObject responseJSON = new JSONObject(response);
-                        String action = responseJSON.getString("type");
-
-                        switch(action) {
-                            case "OK":
-                                // connects to power grid
-                                // 
-                                int value = responseJSON.getInt("next");
-                                break;
-                            case "EXCEEDED":
-                                
-                                // OGNI NEXT TEMPO PROVO A RICONNETTERMI
-                                // hold on, notify user
-                                break;
-                        }
-
-                        inputStream.close();
-                        outputStream.close();
-                        socket.close();
-*/

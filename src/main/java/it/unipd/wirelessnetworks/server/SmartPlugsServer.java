@@ -33,11 +33,11 @@ public class SmartPlugsServer extends WebSocketServer {
         clients.put(clientID, clientInfo);
 
         // telling client it's connected
-        connection.send("{'type' : 'OK', 'next': 60}");
+        connection.send("{'type' : 'OK', 'next': 60, 'id': "+clientID+"}");
     }
 
     private void disconnectClientFromGrid(String clientID) {
-        broadcast("{'type': 'DISCONNECT', id: "+clientID+"}");
+        broadcast("{'type': 'DISCONNECT', 'id': "+clientID+"}");
         int clientWatts = Integer.parseInt(clients.get(clientID).get(1));
         wattCounter.addAndGet(-clientWatts);
         clients.remove(clientID);
@@ -101,7 +101,7 @@ public class SmartPlugsServer extends WebSocketServer {
 
                     if (inputString.equals("-1")) {
                         // if we are here, the user doesn't want to disconnect other devices
-                        connection.send("{'type': 'EXCEEDED', id: "+clientID+"}");
+                        connection.send("{'type': 'EXCEEDED', 'id': "+clientID+"}");
                     } else {
                         String[] ids = inputString.split(" ");
                         for(int i=0; i<ids.length; i++) {
