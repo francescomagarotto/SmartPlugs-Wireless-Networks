@@ -50,8 +50,7 @@ public class SmartPlugsServer extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        System.out.println("[SERVER] Closed connection with" + conn.getRemoteSocketAddress() + " with exit code " + code
-                + " additional info: " + reason);
+        System.out.println("[SERVER] Closed connection with" + conn.getRemoteSocketAddress() + " with exit code " + code + " additional info: " + reason);
     }
 
     @Override
@@ -73,15 +72,11 @@ public class SmartPlugsServer extends WebSocketServer {
                 connectClientToGrid(connection, clientID, clientName, clientWatts);
             } else {
                 System.out.println("[SERVER]:");
-                System.out
-                        .println(clientName + " has tried to connect but there's not enough wattage to accomodate it");
-                System.out
-                        .println("Type the IDs separated by spaces of the devices to disconnect in order to accomodate "
-                                + clientName + " or Type -1 to leave " + clientName + "disconnected");
+                System.out.println(clientName + " has tried to connect but there's not enough wattage to accomodate it");
+                System.out.println("Type the IDs separated by spaces of the devices to disconnect in order to accomodate "+ clientName + " or Type -1 to leave " + clientName + "disconnected");
                 // listing connected clients for the user
                 for (String key : clients.keySet()) {
-                    System.out.println("Id: " + key + " device: " + clients.get(key).get(0) + " wattage: "
-                            + clients.get(key).get(1));
+                    System.out.println("Id: " + key + " device: " + clients.get(key).get(0) + " wattage: " + clients.get(key).get(1));
                 }
 
                 // getting enough clients to disconnect in order to connect new client
@@ -99,9 +94,7 @@ public class SmartPlugsServer extends WebSocketServer {
                     // weren't enough to accomodate the new client
                     if (sumWattage == 0) {
                         System.out.println("The clients you chose to disconnect aren't enough.");
-                        System.out.println(
-                                "Type the IDs separated by spaces of the devices to disconnect in order to accomodate "
-                                        + clientName + " or Type -1 to leave " + clientName + "disconnected");
+                        System.out.println("Type the IDs separated by spaces of the devices to disconnect in order to accomodate " + clientName + " or Type -1 to leave " + clientName + "disconnected");
                     }
 
                     sumWattage = 0;
@@ -128,7 +121,7 @@ public class SmartPlugsServer extends WebSocketServer {
                             }
                         }
                     }
-
+                }
                 // if we are here, the user gave a correct list of devices to disconnect to
                 // accomodate the new device
                 // disconnecting devices:
@@ -146,8 +139,7 @@ public class SmartPlugsServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket connection, ByteBuffer message) {
-        System.out.println(
-                "[SERVER] Received message in an unsupported format from " + connection.getRemoteSocketAddress());
+        System.out.println("[SERVER] Received message in an unsupported format from " + connection.getRemoteSocketAddress());
         // handle messages from clients (will there even be?)
     }
 
