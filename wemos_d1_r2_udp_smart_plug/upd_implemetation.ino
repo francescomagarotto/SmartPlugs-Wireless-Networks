@@ -89,7 +89,7 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
     obj["act"] = "ACK";
     digitalWrite(RELAY, HIGH);
     obj["sts"] = digitalRead(RELAY);
-    }
+  }
   else if (strcmp(s, "OFF") == 0) {
     obj["act"] = "ACK";
     digitalWrite(RELAY, LOW);
