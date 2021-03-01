@@ -71,69 +71,83 @@ class EchoServer extends Thread {
                     = new String(packet.getData(), 0, packet.getLength());
             JSONObject jsonObject = new JSONObject(received);
 			
+            String statusAction = "off";
+            int defaultClientWattage = 0;
+
 			DatagramPacket replyPacket;
             switch (jsonObject.getString("act")) {
-                case "ACK":
+                case "INIT":
 					if(map.containsKey(address.toString())) {
 						// if i already have it, this message lets me know the host is still connected
 						// so if this case doesn't happen for a given host i should remove it from the map
 					} else {
-						//if absent, add to map<address, JSON>, reply with on/off based on wether or not there's room for it
-						int watts = jsonObject.getInt("last_watt");
+						// if absent, add to map<address, JSON>, reply with on/off based on wether or not there's room for it
+						int watts = jsonObject.getInt("max_power_usage");
 						if (watts == 0) {
-							watts = wattsDeviceMap[jsonObject.getString("device_type")];
+                            defaultClientWattage = wattsDeviceMap[jsonObject.getString("type")];
 						}
-						String statusAction = "off";
+
 						if (watts < availableWatts) {
-							statusAction = "on";
+                            statusAction = "on";
+                            availableWatts -= watts;
+                        }
 						// this json is for the server's internal map of clients
 						JSONObject mapJson = Json.createObjectBuilder()
-							.add("name", jsonObject.getString("name"))
-							.add("device_type", jsonObject.getString("device_type"))
+							.add("type", jsonObject.getString("type"))
+                            .add("watts", jsonObject.getInt("max_power_usage"))
 							.add("status", statusAction)
 						.build();
-						// this json is for the reply the server sends to the client
-						JSONObject replyJson = Json.createObjectBuilder()
-							.add("act", statusAction)
-						.build();
 						map.put(address.toString(), mapJson);
-						byte[] replyBytes = replyJson.toString().getBytes("UTF-8");
-						replyPacket = new DatagramPacket(replyBytes, replyBytes.length);
 					}
                     break;
-				case "CHANGE":
-					//if there's no room for client reply with off (should the server w8 for ACK?), else if change is negative, if now there's 
-					//room for another client, send on to that client
+				case "UPDATE":
+					// if there's no room for client reply with off (should the server w8 for ACK?), else if change is negative, if now there's 
+					// room for another client, send on to that client
+                    int new_watts = jsonObject.getInt("active_power");
+                    int old_watts = map[jsonObject.getAddress().toString()].getInt("max_power_usage");
+                    availableWatts += old_watts;
+                    if (new_watts < availableWatts) {
+                        statusAction = "on";
+                        availableWatts -= new_watts;
+                        if (old_watts > new_watts) {
+                            Set<Entry<String, JSONObject>> entrySet = map.entrySet();
+                            for(Entry<String, JSONObject> entry : entrySet) {
+                                if(entry.getValue()["max_power_usage"] < availableWatts) {
+                                    availableWatts -= new_watts;
+                                    String newClientAddress = entry.getKey();
+                                    // should send ON packet to this host too
+                                }
+                            }
+                        }
+                    } 
+                    else
+                        statusAction = "off";
+                    map[jsonObject.getAddress().toString()].setString("status", statusAction);
+                    map[jsonObject.getAddress().toString()].setInt("max_power_usage", new_watts);
                     break;
             }
-
             try {
+                // this json is for the reply the server sends to the client
+                JSONObject replyJson = Json.createObjectBuilder()
+                    .add("act", statusAction)
+                .build();
+                if (defaultClientWattage != 0) {
+                    replyJson.setInt("max_power_usage", defaultClientWattage);
+                }
+                byte[] replyBytes = replyJson.toString().getBytes("UTF-8");
+                replyPacket = new DatagramPacket(replyBytes, replyBytes.length); 
                 socket.send(replyPacket);
+                // start thread that w8s for response and resends packet if not
             } catch (IOException e) { e.printStackTrace(); }
         }
     }
 }
 
 /*
-server broadcast sort of beacon
-INIT
-ON
-OFF
+MANCA:
 
-ogni tot minuti inviare INIT
-
-i thread mi servono per non bloccare e inviare richieste durante i periodi di w8 for ack
-
-
-SERVER PARTE, INVIA INIT A TUTTI
-
-TUTTI INVIANO ACK CON HOSTNAME E INDICANO ULTIMO MAX CONSUMO, STATO
-
-SE ULTIMO = 0 SERVER USA VALORE DI RIF. IN BASE AL DISPOSITIVO
-TIENE TRACCIA DI TUTTI DEVO RICORDARE SE ON O OFF. CHE SONO I COMANDI CHE INVIO AL CLIENT IN BASE A SE CI STA O NO.
-
-OGNI TOT IL SERVER INIT
-
-TTL ai dispositivi
+- SE CLIENT NON RISPONDE AD INIT PER TOT VOLTE DI FILA: CLIENT IS OUT
+- MANDARE PACCHETTI AD ALTRI CLIENT SE SI LIBERA POSTO (QUANDO CLIENT SI DISCONETTONO O QUANDO CLIENT CONSUMANO MENO)
+- ASPETTARE PACCHETTI DI ACK DA PARTE DEI CLIENT E REINVIARE SE NON ARRIVANO (THREAD)
 
 */
