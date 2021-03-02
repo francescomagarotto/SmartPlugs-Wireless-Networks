@@ -42,10 +42,10 @@ class INITSender extends AbstractScheduledService {
         byte[] buffer = "{act: \"INIT\"}".getBytes();
         String localAddress = InetAddress.getLocalHost().getHostAddress();
         int indexOfLastPoint = localAddress.lastIndexOf(".");
-        String BroadcastAddr = localAddress.substring(0, indexOfLastPoint)+".255";
+        String BroadcastAddr = localAddress.substring(0, indexOfLastPoint) + ".255";
 
-        DatagramPacket packet
-                = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(BroadcastAddr), Configurations.PORT);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(BroadcastAddr),
+                Configurations.PORT);
         socket.send(packet);
         socket.close();
     }
@@ -60,16 +60,19 @@ class INITSender extends AbstractScheduledService {
 class ACKResponder extends AbstractScheduledService {
 
     List<ExpectedAck> expectedAcksList;
+
     public ACKResponder(List<ExpectedAck> expectedAcksList) {
         this.expectedAcksList = expectedAcksList;
     }
 
     @Override
     protected void runOneIteration() throws Exception {
-        for(ExpectedAck expected :  expectedAcksList) {
+        for (ExpectedAck expected : expectedAcksList) {
             if (expected.ttl <= 0) {
-                DatagramSocket socket = new DatagramSocket(Configurations.PORT, InetAddress.getByName(expected.clientAddress));
+                DatagramSocket socket = new DatagramSocket(Configurations.PORT,
+                        InetAddress.getByName(expected.clientAddress));
                 socket.send(expected.packetToResend);
+                socket.close();
             } else {
                 expected.ttl -= 1;
             }
@@ -85,7 +88,7 @@ class ACKResponder extends AbstractScheduledService {
 class EchoServer extends Thread {
     private DatagramSocket socket;
     private byte[] buf = new byte[256];
-	private int availableWatts = 3000;
+    private int availableWatts = 3000;
     private List<ExpectedAck> expectedAcksList;
     Map<String, JSONObject> map;
     Map<String, Integer> wattsDeviceMap;
@@ -104,52 +107,54 @@ class EchoServer extends Thread {
         while (true) {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
-                socket.receive(packet);	// receiving packet from client
+                socket.receive(packet); // receiving packet from client
             } catch (IOException e) {
                 e.printStackTrace();
             }
-			// lista: client-pacchetto-ttl
+            // lista: client-pacchetto-ttl
             InetAddress address = packet.getAddress();
             int port = packet.getPort();
             packet = new DatagramPacket(buf, buf.length, address, port);
-			
-            String received
-                    = new String(packet.getData(), 0, packet.getLength());
+
+            String received = new String(packet.getData(), 0, packet.getLength());
             JSONObject jsonObject = new JSONObject(received);
-			
+
             String statusAction = "off";
             int defaultClientWattage = 0;
 
-			DatagramPacket replyPacket;
+            DatagramPacket replyPacket;
             switch (jsonObject.getString("act")) {
                 case "INIT":
-					if(map.containsKey(address.toString())) {
+                    if (map.containsKey(address.toString())) {
                         // TODO: SE CLIENT NON RISPONDE AD INIT PER TOT VOLTE DI FILA: CLIENT IS OUT
                         // contatore = 3, contatore -1 in sto caso, if contatore = 0 tolgo da map
-						// if i already have it, this message lets me know the host is still connected
-						// so if this case doesn't happen for a given host i should remove it from the map
-					} else {
-						// if absent add to map<address, JSON>, reply with on/off based on wether or not there's room for it
-						int watts = jsonObject.getInt("max_power_usage");
-						if (watts == 0) {
+                        // if i already have it, this message lets me know the host is still connected
+                        // so if this case doesn't happen for a given host i should remove it from the
+                        // map
+                    } else {
+                        // if absent add to map<address, JSON>, reply with on/off based on wether or not
+                        // there's room for it
+                        int watts = jsonObject.getInt("max_power_usage");
+                        if (watts == 0) {
                             defaultClientWattage = wattsDeviceMap.get(jsonObject.getString("type"));
-						}
+                        }
 
-						if (watts < availableWatts) {
+                        if (watts < availableWatts) {
                             statusAction = "on";
                             availableWatts -= watts;
                         }
-						// this json is for the server's internal map of clients
-						JSONObject mapJson = new JSONObject();
+                        // this json is for the server's internal map of clients
+                        JSONObject mapJson = new JSONObject();
                         mapJson.put("type", jsonObject.getString("type"));
                         mapJson.put("watts", jsonObject.getInt("max_power_usage"));
                         mapJson.put("status", statusAction);
-						map.put(address.toString(), mapJson);
-					}
+                        map.put(address.toString(), mapJson);
+                    }
                     break;
-				case "UPDATE":
-					// if there's no room for client reply with off (should the server w8 for ACK?), else if change is negative, if now there's 
-					// room for another client, send on to that client
+                case "UPDATE":
+                    // if there's no room for client reply with off (should the server w8 for ACK?),
+                    // else if change is negative, if now there's
+                    // room for another client, send on to that client
                     int new_watts = jsonObject.getInt("active_power");
                     int old_watts = map.get(address.toString()).getInt("max_power_usage");
                     availableWatts += old_watts;
@@ -158,27 +163,31 @@ class EchoServer extends Thread {
                         availableWatts -= new_watts;
                         if (old_watts > new_watts) {
                             Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
-                            for(Map.Entry<String, JSONObject> entry : entrySet) {
-                                if((int) entry.getValue().get("max_power_usage") < availableWatts) {
+                            for (Map.Entry<String, JSONObject> entry : entrySet) {
+                                if ((int) entry.getValue().get("max_power_usage") < availableWatts) {
                                     availableWatts -= new_watts;
                                     String newClientAddress = entry.getKey();
                                     // should send ON packet to this host too
                                     try {
-                                    // this json is for the reply the server sends to the client
+                                        // this json is for the reply the server sends to the client
                                         JSONObject replyJson = new JSONObject();
                                         replyJson.put("act", statusAction);
                                         byte[] replyBytes = replyJson.toString().getBytes("UTF-8");
                                         replyPacket = new DatagramPacket(replyBytes, replyBytes.length);
-                                        DatagramSocket socket = new DatagramSocket(Configurations.PORT, InetAddress.getByName(address.toString()));
-                                        expectedAcksList.add(new ExpectedAck(newClientAddress, replyPacket, Configurations.TTL));
-                                        socket.send(replyPacket);
+                                        try (DatagramSocket socket = new DatagramSocket(Configurations.PORT,
+                                                InetAddress.getByName(address.toString()))) {
+                                            expectedAcksList.add(
+                                                    new ExpectedAck(newClientAddress, replyPacket, Configurations.TTL));
+                                            socket.send(replyPacket);
+                                        }
                                         // start thread that w8s for response and resends packet if not
-                                    } catch (IOException e) { e.printStackTrace(); }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
-                    } 
-                    else {
+                    } else {
                         statusAction = "off";
                     }
                     JSONObject updatedJson = map.get(address.toString());
@@ -187,31 +196,36 @@ class EchoServer extends Thread {
                     map.put(address.toString(), updatedJson);
                     break;
                 case "ACK":
-                    for(ExpectedAck expected : expectedAcksList) {
-                        if(expected.clientAddress.equals(address.toString())) {
+                    for (ExpectedAck expected : expectedAcksList) {
+                        if (expected.clientAddress.equals(address.toString())) {
                             expectedAcksList.remove(expected);
                         }
                     }
                     break;
             }
             try {
-                DatagramSocket socket = new DatagramSocket(Configurations.PORT, InetAddress.getByName(address.toString()));
-                JSONObject replyJson = new JSONObject();
-                replyJson.put("act", statusAction);
-                if (defaultClientWattage != 0) {
-                    replyJson.put("max_power_usage", defaultClientWattage);
+                try (DatagramSocket socket = new DatagramSocket(Configurations.PORT,
+                        InetAddress.getByName(address.toString()))) {
+                    JSONObject replyJson = new JSONObject();
+                    replyJson.put("act", statusAction);
+                    if (defaultClientWattage != 0) {
+                        replyJson.put("max_power_usage", defaultClientWattage);
+                    }
+                    byte[] replyBytes = replyJson.toString().getBytes("UTF-8");
+                    replyPacket = new DatagramPacket(replyBytes, replyBytes.length);
+                    expectedAcksList.add(new ExpectedAck(address.toString(), replyPacket, Configurations.TTL));
+                    socket.send(replyPacket);
                 }
-                byte[] replyBytes = replyJson.toString().getBytes("UTF-8");
-                replyPacket = new DatagramPacket(replyBytes, replyBytes.length);
-                expectedAcksList.add(new ExpectedAck(address.toString(), replyPacket, Configurations.TTL));
-                socket.send(replyPacket);
                 // start thread that w8s for response and resends packet if not
-            } catch (IOException e) { e.printStackTrace(); }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
 
-// AbstractScheduledService uses Scheduler to runOneIteration every 60 TimeUnit.SECONDS
+// AbstractScheduledService uses Scheduler to runOneIteration every 60
+// TimeUnit.SECONDS
 public class UDPServer {
     public static void main(String[] args) throws SocketException {
         // lista sincronizzata client-pacchetto-ttl
