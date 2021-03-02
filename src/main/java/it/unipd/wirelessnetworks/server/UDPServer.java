@@ -78,6 +78,7 @@ class EchoServer extends Thread {
             switch (jsonObject.getString("act")) {
                 case "INIT":
 					if(map.containsKey(address.toString())) {
+                        // TODO: SE CLIENT NON RISPONDE AD INIT PER TOT VOLTE DI FILA: CLIENT IS OUT
 						// if i already have it, this message lets me know the host is still connected
 						// so if this case doesn't happen for a given host i should remove it from the map
 					} else {
@@ -116,6 +117,7 @@ class EchoServer extends Thread {
                                     availableWatts -= new_watts;
                                     String newClientAddress = entry.getKey();
                                     // should send ON packet to this host too
+                                    // TODO: MANDARE PACCHETTI AD ALTRI CLIENT SE SI LIBERA POSTO (QUANDO CLIENT SI DISCONETTONO O QUANDO CLIENT CONSUMANO MENO)
                                 }
                             }
                         }
@@ -128,6 +130,7 @@ class EchoServer extends Thread {
             }
             try {
                 // this json is for the reply the server sends to the client
+                // TODO: ASPETTARE PACCHETTI DI ACK DA PARTE DEI CLIENT E REINVIARE SE NON ARRIVANO (THREAD)
                 JSONObject replyJson = Json.createObjectBuilder()
                     .add("act", statusAction)
                 .build();
