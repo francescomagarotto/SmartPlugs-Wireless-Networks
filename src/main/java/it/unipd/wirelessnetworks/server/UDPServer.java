@@ -12,12 +12,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.*;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 class Configurations {
-    public static int PORT = 44505;
+    public static int PORT = 4210;
     public static int TTL = 5;
 }
 
@@ -34,16 +35,19 @@ class ExpectedAck {
 }
 
 class INITSender extends AbstractScheduledService {
+    private static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
 
     @Override
     protected void runOneIteration() throws Exception {
+        LOGGER.info("Executed");
         DatagramSocket socket = new DatagramSocket();
         socket.setBroadcast(true);
         byte[] buffer = "{act: \"INIT\"}".getBytes();
         String localAddress = InetAddress.getLocalHost().getHostAddress();
+        LOGGER.info(localAddress);
         int indexOfLastPoint = localAddress.lastIndexOf(".");
         String BroadcastAddr = localAddress.substring(0, indexOfLastPoint) + ".255";
-
+        LOGGER.info(BroadcastAddr);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(BroadcastAddr),
                 Configurations.PORT);
         socket.send(packet);
@@ -134,8 +138,8 @@ class EchoServer extends Thread {
                     } else {
                         // if absent add to map<address, JSON>, reply with on/off based on wether or not
                         // there's room for it
-                        int watts = jsonObject.getInt("max_power_usage");
-                        if (watts == 0) {
+                        double watts = jsonObject.getDouble("max_power_usage");
+                        if (watts == 0d) {
                             defaultClientWattage = wattsDeviceMap.get(jsonObject.getString("type"));
                         }
 
