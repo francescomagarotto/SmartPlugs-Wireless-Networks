@@ -117,6 +117,11 @@ class EchoServer extends Thread {
             }
             // lista: client-pacchetto-ttl
             InetAddress address = packet.getAddress();
+            String localAddress = InetAddress.getLocalHost().getHostAddress();
+            if (address.toString().equals(localAddress)) {
+                break;
+            }
+
             int port = packet.getPort();
             packet = new DatagramPacket(buf, buf.length, address, port);
 
@@ -127,6 +132,7 @@ class EchoServer extends Thread {
             int defaultClientWattage = 0;
 
             DatagramPacket replyPacket;
+
             switch (jsonObject.getString("act")) {
                 case "INIT":
                     if (map.containsKey(address.toString())) {
