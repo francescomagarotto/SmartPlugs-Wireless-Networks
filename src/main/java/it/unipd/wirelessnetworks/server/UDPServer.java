@@ -125,6 +125,7 @@ class ACKResponder extends AbstractScheduledService {
                 DatagramSocket socket = new DatagramSocket();
                 socket.send(expected.packetToResend);
                 socket.close();
+                expectedAcksList.remove(expected);
             } else {
                 expected.ttl -= 1;
             }
