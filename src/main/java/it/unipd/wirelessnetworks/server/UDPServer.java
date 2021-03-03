@@ -69,7 +69,6 @@ class ClientData {
 }
 
 class ServerCommands {
-
     private static void clientONOFF(String address, String onoff) {
         JSONObject json = new JSONObject();
         json.put("act", onoff);
@@ -113,7 +112,6 @@ class INITSender extends AbstractScheduledService {
 }
 
 class ACKResponder extends AbstractScheduledService {
-
     List<ExpectedAck> expectedAcksList;
 
     public ACKResponder(List<ExpectedAck> expectedAcksList) {
@@ -180,7 +178,6 @@ class EchoServer extends Thread {
                                 // TODO: fringe case: if client doesn't respond to INIT for long enough: set status to off
                             } else {
                                 // if client unknown to server: add to map<address, JSON>, reply with on/off
-
                                 // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
                                 LOGGER.info("[Server] Client: "+clientAddress+" is connecting for the first time");
                                 double watts = jsonObject.getDouble("max_power_usage");
@@ -197,7 +194,8 @@ class EchoServer extends Thread {
                                 // updating server's map of clients
                                 JSONObject mapJson = new JSONObject();
                                 mapJson.put("type", jsonObject.getString("type"));
-                                mapJson.put("watts", jsonObject.getInt("max_power_usage"));
+                                mapJson.put("watts", watts);
+                                mapJson.put("max_power_usage", watts);
                                 mapJson.put("status", statusAction);
                                 map.putClient(clientAddress, mapJson);
                                 // sending ON/OFF packet to client
@@ -215,7 +213,13 @@ class EchoServer extends Thread {
                             LOGGER.info("[Server] Received UPDATE packet from Client: "+clientAddress);
                             double new_watts = jsonObject.getDouble("active_power");
                             double old_watts = map.getClient(clientAddress).getDouble("watts");
+                            double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
                             String currentStatus = map.getClient(clientAddress).getString("status");
+                            double max_watts;
+                            if (new_watts > old_max_watts)
+                                max_watts = new_watts;
+                            else 
+                                max_watts = old_max_watts;
                             // availableWatts += old_watts;
                             // now device usage is lower so: device stays connected, maybe more device can connect
                             if (new_watts < old_watts) {
@@ -224,11 +228,14 @@ class EchoServer extends Thread {
                                 } else if (new_watts < availableWatts+old_watts) {
                                     statusAction = "ON";
                                 }
+                                if (new_watts == 0.0) {
+                                    statusAction = "OFF";
+                                }
                                 availableWatts += (old_watts-new_watts);
                                 // connect more devices if possible (first come first served)
                                 Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
                                 for (Map.Entry<String, JSONObject> entry : entrySet) {
-                                    double entryWatts = entry.getValue().getDouble("watts");
+                                    double entryWatts = entry.getValue().getDouble("max_power_usage");
                                     String status = entry.getValue().getString("status");
                                     // only if the client is off
                                     if (status.equals("OFF")) {
@@ -258,7 +265,8 @@ class EchoServer extends Thread {
                             // in any case, update map data for client
                             JSONObject updatedJson = map.getClient(clientAddress);
                             updatedJson.put("status", statusAction);
-                            updatedJson.put("max_power_usage", new_watts);
+                            updatedJson.put("watts", new_watts);
+                            updatedJson.put("max_power_usage", max_watts);
                             map.putClient(clientAddress, updatedJson);
                             // sending ON/OFF packet to client
                             JSONObject replyJson = new JSONObject();
@@ -270,7 +278,7 @@ class EchoServer extends Thread {
                             // if an ACK is received, remove from list of expected ACKs
                             LOGGER.info("[Server] Received ACK from: "+clientAddress);
                             for (ExpectedAck expected : expectedAcksList) {
-                                if (expected.clientAddress.equals(clientAddress)) { // TODO: whattashitisthis
+                                if (expected.clientAddress.equals(clientAddress)) {
                                     expectedAcksList.remove(expected);
                                     LOGGER.info("[Server] Removing ACK from expected ACKs list for client: "+clientAddress);
                                 }
