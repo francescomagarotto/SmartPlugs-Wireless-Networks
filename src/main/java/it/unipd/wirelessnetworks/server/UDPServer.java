@@ -142,7 +142,7 @@ class ACKResponder extends AbstractScheduledService {
 class EchoServer extends Thread {
     public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
     private byte[] buf = new byte[256];
-    private double availableWatts = 3000d;
+    private double availableWatts = 1510d;
     private List<ExpectedAck> expectedAcksList;
     ClientData map;
     Map<String, Integer> wattsDeviceMap;
@@ -214,7 +214,7 @@ class EchoServer extends Thread {
                             // comparing previous wattage to new wattage
                             LOGGER.info("[Server] Received UPDATE packet from Client: "+clientAddress);
                             double new_watts = jsonObject.getDouble("active_power");
-                            double old_watts = map.getClient(clientAddress).getDouble("max_power_usage");
+                            double old_watts = map.getClient(clientAddress).getDouble("watts");
                             String currentStatus = map.getClient(clientAddress).getString("status");
                             // availableWatts += old_watts;
                             // now device usage is lower so: device stays connected, maybe more device can connect
@@ -228,7 +228,7 @@ class EchoServer extends Thread {
                                 // connect more devices if possible (first come first served)
                                 Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
                                 for (Map.Entry<String, JSONObject> entry : entrySet) {
-                                    double entryWatts = entry.getValue().getDouble("max_power_usage");
+                                    double entryWatts = entry.getValue().getDouble("watts");
                                     String status = entry.getValue().getString("status");
                                     // only if the client is off
                                     if (status.equals("OFF")) {
