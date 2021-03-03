@@ -149,9 +149,19 @@ class EchoServer extends Thread {
         this.expectedAcksList = expectedAcksList;
         map = ClientData.getInstance();
         wattsDeviceMap = new HashMap<>();
-        wattsDeviceMap.put("LOW", 100);
-        wattsDeviceMap.put("MEDIUM", 500);
-        wattsDeviceMap.put("HIGH", 1000);
+        wattsDeviceMap.put("DRYER", 3000);
+        wattsDeviceMap.put("STOVE", 3000);
+        wattsDeviceMap.put("OVEN", 3000);
+        wattsDeviceMap.put("IRON", 2000);
+        wattsDeviceMap.put("DISHWASHER", 1800);
+        wattsDeviceMap.put("WASHINGMACHINE", 500);
+        wattsDeviceMap.put("HUMIDIFIER", 500);
+        wattsDeviceMap.put("DEHUMIDIFIER", 300);
+        wattsDeviceMap.put("COFFEEMACHINE", 300);
+        wattsDeviceMap.put("PC", 250);
+        wattsDeviceMap.put("TV", 120);
+        wattsDeviceMap.put("LAMP", 40);
+        wattsDeviceMap.put("CHARGER", 5);
     }
 
     public void run() {

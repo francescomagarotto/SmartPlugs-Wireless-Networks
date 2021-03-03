@@ -71,12 +71,12 @@ void pzemdata(double& active_power) {
   if (result == node.ku8MBSuccess)
   {
     active_power     = (node.getResponseBuffer(0x03) / 10.0f);
-//    voltage_usage      = (node.getResponseBuffer(0x00) / 10.0f);
-//    current_usage      = (node.getResponseBuffer(0x01) / 1000.000f);
-//    active_energy    = (node.getResponseBuffer(0x05) / 1000.0f);
-//    frequency          = (node.getResponseBuffer(0x07) / 10.0f);
-//    power_factor       = (node.getResponseBuffer(0x08) / 100.0f);
-//    over_power_alarm   = (node.getResponseBuffer(0x09));
+    //    voltage_usage      = (node.getResponseBuffer(0x00) / 10.0f);
+    //    current_usage      = (node.getResponseBuffer(0x01) / 1000.000f);
+    //    active_energy    = (node.getResponseBuffer(0x05) / 1000.0f);
+    //    frequency          = (node.getResponseBuffer(0x07) / 10.0f);
+    //    power_factor       = (node.getResponseBuffer(0x08) / 100.0f);
+    //    over_power_alarm   = (node.getResponseBuffer(0x09));
   }
 }
 
@@ -122,6 +122,7 @@ bool check(void*) {
       max_usage = active_power;
       StaticJsonDocument<200> doc;
       JsonObject obj = doc.createNestedObject();
+      obj["act"] = "UPDATE";
       obj["active_power"] = active_power;
       Udp.beginPacket(serverIPAddress, serverPort);
       serializeJson(doc, Udp);
