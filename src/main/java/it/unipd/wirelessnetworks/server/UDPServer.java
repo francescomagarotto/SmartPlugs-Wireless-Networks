@@ -164,25 +164,25 @@ class EchoServer extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            InetAddress clientAddress = packet.getAddress();    
+            String clientAddress = inetAddressToString(packet.getAddress());    
             try {
                 // avoid reading own packets
                 String localAddress = InetAddress.getLocalHost().getHostAddress();
-                if (!((clientAddress.toString()).contains(localAddress))) {
+                if (!((clientAddress).contains(localAddress))) {
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    LOGGER.info("[Server] Received: "+received+" from Client: "+clientAddress.toString());
+                    LOGGER.info("[Server] Received: "+received+" from Client: "+clientAddress);
                     JSONObject jsonObject = new JSONObject(received);
                     String statusAction = "OFF";
                     DatagramPacket replyPacket;
                     switch (jsonObject.getString("act")) {
                         case "INIT":
-                            if (map.containsKey(clientAddress.toString())) {
+                            if (map.containsKey(clientAddress)) {
                                 // TODO: fringe case: if client doesn't respond to INIT for long enough: set status to off
                             } else {
                                 // if client unknown to server: add to map<address, JSON>, reply with on/off
 
                                 // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
-                                LOGGER.info("[Server] Client: "+clientAddress.toString()+" is connecting for the first time");
+                                LOGGER.info("[Server] Client: "+clientAddress+" is connecting for the first time");
                                 double watts = jsonObject.getDouble("max_power_usage");
                                 if (watts == 0d) {
                                     watts = wattsDeviceMap.get(jsonObject.getString("type"));
@@ -199,12 +199,12 @@ class EchoServer extends Thread {
                                 mapJson.put("type", jsonObject.getString("type"));
                                 mapJson.put("watts", jsonObject.getInt("max_power_usage"));
                                 mapJson.put("status", statusAction);
-                                map.putClient(clientAddress.toString(), mapJson);
+                                map.putClient(clientAddress, mapJson);
                                 // sending ON/OFF packet to client
                                 JSONObject replyJson = new JSONObject();
                                 replyJson.put("act", statusAction);
-                                LOGGER.info("[Server] Added client: "+clientAddress.toString()+" to internal map, with information: "+mapJson.toString());
-                                LOGGER.info("[Server] Replying to client: "+clientAddress.toString()+" with: "+replyJson.toString());
+                                LOGGER.info("[Server] Added client: "+clientAddress+" to internal map, with information: "+mapJson.toString());
+                                LOGGER.info("[Server] Replying to client: "+clientAddress+" with: "+replyJson.toString());
                                 sendToClient(clientAddress, replyJson);
                             }
                         break;
@@ -212,10 +212,10 @@ class EchoServer extends Thread {
                             // if there's no room for client reply with off (should the server w8 for ACK?),
                             // else, if change is negative check if more clients can connect
                             // comparing previous wattage to new wattage
-                            LOGGER.info("[Server] Received UPDATE packet from Client: "+clientAddress.toString());
+                            LOGGER.info("[Server] Received UPDATE packet from Client: "+clientAddress);
                             double new_watts = jsonObject.getDouble("active_power");
-                            double old_watts = map.getClient(clientAddress.toString()).getDouble("max_power_usage");
-                            String currentStatus = map.getClient(clientAddress.toString()).getString("status");
+                            double old_watts = map.getClient(clientAddress).getDouble("max_power_usage");
+                            String currentStatus = map.getClient(clientAddress).getString("status");
                             // availableWatts += old_watts;
                             // now device usage is lower so: device stays connected, maybe more device can connect
                             if (new_watts < old_watts) {
@@ -240,8 +240,8 @@ class EchoServer extends Thread {
                                             // send ON packet to this client
                                             JSONObject replyJson = new JSONObject();
                                             replyJson.put("act", "ON");
-                                            LOGGER.info("[Server] UPDATE from client: "+clientAddress.toString()+" allows: "+newClientAddress+" to also turn ON, sending packet: "+replyJson.toString());
-                                            //sendToClient(newClientAddress, replyJson); TODO: SISTEMARE STA MERDA
+                                            LOGGER.info("[Server] UPDATE from client: "+clientAddress+" allows: "+newClientAddress+" to also turn ON, sending packet: "+replyJson.toString());
+                                            sendToClient(newClientAddress, replyJson);
                                         }
                                     }
                                 }
@@ -256,23 +256,23 @@ class EchoServer extends Thread {
                                 }
                             }
                             // in any case, update map data for client
-                            JSONObject updatedJson = map.getClient(clientAddress.toString());
+                            JSONObject updatedJson = map.getClient(clientAddress);
                             updatedJson.put("status", statusAction);
                             updatedJson.put("max_power_usage", new_watts);
-                            map.putClient(clientAddress.toString(), updatedJson);
+                            map.putClient(clientAddress, updatedJson);
                             // sending ON/OFF packet to client
                             JSONObject replyJson = new JSONObject();
                             replyJson.put("act", statusAction);
-                            LOGGER.info("[Server] Replying to client: "+clientAddress.toString()+" with: "+replyJson.toString());
+                            LOGGER.info("[Server] Replying to client: "+clientAddress+" with: "+replyJson.toString());
                             sendToClient(clientAddress, replyJson);
                         break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
-                            LOGGER.info("[Server] Received ACK from: "+clientAddress.toString());
+                            LOGGER.info("[Server] Received ACK from: "+clientAddress);
                             for (ExpectedAck expected : expectedAcksList) {
-                                if (expected.clientAddress.equals(clientAddress.toString())) {
+                                if (expected.clientAddress.equals(clientAddress)) { // TODO: whattashitisthis
                                     expectedAcksList.remove(expected);
-                                    LOGGER.info("[Server] Removing ACK from expected ACKs list for client: "+clientAddress.toString());
+                                    LOGGER.info("[Server] Removing ACK from expected ACKs list for client: "+clientAddress);
                                 }
                             }
                         break;
@@ -285,20 +285,27 @@ class EchoServer extends Thread {
     }
 
     // this method sends a JSON to a given client and adds an entry to the expectedACKs list
-    public void sendToClient(InetAddress address, JSONObject json) {
+    public void sendToClient(String address, JSONObject json) {
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] replyBytes = json.toString().getBytes("UTF-8");
-            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, address, Configurations.PORT);
-            expectedAcksList.add(new ExpectedAck(address.toString(), replyPacket, Configurations.TTL));
+            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
+            expectedAcksList.add(new ExpectedAck(address, replyPacket, Configurations.TTL));
             socket.send(replyPacket);
         } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public String inetAddressToString(InetAddress address) {
+        String strAddress = address.toString();
+        if (strAddress.startsWith("/"))
+            return strAddress.substring(1);
+        else
+            return strAddress;
     }
 }
 
 // AbstractScheduledService uses Scheduler to runOneIteration every 60
 // TimeUnit.SECONDS
 public class UDPServer {
-    
     public static void main(String[] args) throws SocketException {
         // lista sincronizzata client-pacchetto-ttl
         List<ExpectedAck> expectedAcksList = Collections.synchronizedList(new ArrayList<>());
