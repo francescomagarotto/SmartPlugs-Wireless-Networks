@@ -42,7 +42,7 @@ void setup() {
   Serial.println(" connected");
   Udp.begin(localUdpPort);
   Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
-  digitalWrite(RELAY, HIGH);
+  digitalWrite(RELAY, LOW);
 }
 
 void loop() {
