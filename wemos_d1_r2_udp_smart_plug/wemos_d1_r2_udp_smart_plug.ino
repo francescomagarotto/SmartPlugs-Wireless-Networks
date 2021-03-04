@@ -20,7 +20,7 @@ const char* password = "Oliver2016Artu2015";
 double max_usage = 0.0;
 
 IPAddress serverIPAddress = NULL;
-int serverPort;
+int serverPort = 4210;
 
 uint8_t result; uint16_t data[6];
 WiFiUDP Udp;
@@ -86,7 +86,7 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
   const char* s = jsonDocument["act"];
   if (strcmp(s, "INIT") == 0) {
     serverIPAddress = IPAddress(remoteIP);
-    serverPort = remotePort;
+    //serverPort = remotePort;
     obj["act"] = "INIT";
     obj["type"] = "DISHWASHER";
     obj["max_power_usage"] = max_usage;
@@ -107,7 +107,7 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
     digitalWrite(RELAY, LOW);
     obj["sts"] = digitalRead(RELAY);
   }
-  Udp.beginPacket(remoteIP, remotePort);
+  Udp.beginPacket(remoteIP, serverPort);
   serializeJson(doc, Udp);
   Udp.endPacket();
 }
