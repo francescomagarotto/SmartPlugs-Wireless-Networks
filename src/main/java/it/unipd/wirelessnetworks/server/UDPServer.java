@@ -179,6 +179,7 @@ class EchoServer extends Thread {
                 String localAddress = InetAddress.getLocalHost().getHostAddress();
                 if (!((clientAddress).contains(localAddress))) {
                     String received = new String(packet.getData(), 0, packet.getLength());
+                    received = received.substring(1, received.length()-1);
                     LOGGER.info("[Server] Received: "+received+" from Client: "+clientAddress);
                     JSONObject jsonObject = new JSONObject(received);
                     String statusAction = "OFF";
