@@ -1,9 +1,6 @@
 package it.unipd.wirelessnetworks.server;
 
-import com.google.common.util.concurrent.AbstractScheduledService;
 import org.json.JSONObject;
-
-import jdk.nashorn.internal.runtime.JSONListAdapter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -17,23 +14,10 @@ import java.util.Map;
 import java.util.logging.*;
 import java.util.Set;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 class Configurations {
     public static int PORT = 4210;
     public static int TTL = 5;
-}
-
-class ExpectedAck {
-    public String clientAddress;
-    public DatagramPacket packetToResend;
-    public int ttl;
-
-    public ExpectedAck(String address, DatagramPacket packet, int ttl) {
-        this.clientAddress = address;
-        this.packetToResend = packet;
-        this.ttl = ttl;
-    }
 }
 
 class ClientData {
@@ -88,65 +72,15 @@ class ServerCommands {
     }
 }
 
-class INITSender extends AbstractScheduledService {
-    public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
-    @Override
-    protected void runOneIteration() throws Exception {
-        LOGGER.info("[Server] Sending INIT Beacon");
-        DatagramSocket socket = new DatagramSocket();
-        socket.setBroadcast(true);
-        byte[] buffer = "{act: \"INIT\"}".getBytes();
-        String localAddress = InetAddress.getLocalHost().getHostAddress();
-        int indexOfLastPoint = localAddress.lastIndexOf(".");
-        String BroadcastAddr = localAddress.substring(0, indexOfLastPoint) + ".255";
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(BroadcastAddr),
-                Configurations.PORT);
-        socket.send(packet);
-        socket.close();
-    }
-
-    @Override
-    protected Scheduler scheduler() {
-        return Scheduler.newFixedRateSchedule(0, 60, TimeUnit.SECONDS);
-    }
-}
-
-class ACKResponder extends AbstractScheduledService {
-    List<ExpectedAck> expectedAcksList;
-
-    public ACKResponder(List<ExpectedAck> expectedAcksList) {
-        this.expectedAcksList = expectedAcksList;
-    }
-
-    @Override
-    protected void runOneIteration() throws Exception {
-        for (ExpectedAck expected : expectedAcksList) {
-            if (expected.ttl <= 0) {
-                DatagramSocket socket = new DatagramSocket();
-                socket.send(expected.packetToResend);
-                socket.close();
-                expectedAcksList.remove(expected);
-            } else {
-                expected.ttl -= 1;
-            }
-        }
-    }
-
-    @Override
-    protected Scheduler scheduler() {
-        return Scheduler.newFixedRateSchedule(0, 1, TimeUnit.SECONDS);
-    }
-}
-
 class EchoServer extends Thread {
     public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
     private byte[] buf = new byte[256];
     private double availableWatts = 1510d;
-    private List<ExpectedAck> expectedAcksList;
+    private List<ExpectedACK> expectedAcksList;
     ClientData map;
     Map<String, Integer> wattsDeviceMap;
 
-    public EchoServer(List<ExpectedAck> expectedAcksList) throws SocketException {
+    public EchoServer(List<ExpectedACK> expectedAcksList) throws SocketException {
         this.expectedAcksList = expectedAcksList;
         map = ClientData.getInstance();
         wattsDeviceMap = new HashMap<>();
@@ -289,7 +223,7 @@ class EchoServer extends Thread {
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
                             LOGGER.info("[Server] Received ACK from: "+clientAddress);
-                            for (ExpectedAck expected : expectedAcksList) {
+                            for (ExpectedACK expected : expectedAcksList) {
                                 if (expected.clientAddress.equals(clientAddress)) {
                                     expectedAcksList.remove(expected);
                                     LOGGER.info("[Server] Removing ACK from expected ACKs list for client: "+clientAddress);
@@ -309,7 +243,7 @@ class EchoServer extends Thread {
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] replyBytes = json.toString().getBytes("UTF-8");
             DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
-            expectedAcksList.add(new ExpectedAck(address, replyPacket, Configurations.TTL));
+            expectedAcksList.add(new ExpectedACK(address, replyPacket, Configurations.TTL));
             socket.send(replyPacket);
         } catch (Exception e) { e.printStackTrace(); }
     }
@@ -323,12 +257,11 @@ class EchoServer extends Thread {
     }
 }
 
-// AbstractScheduledService uses Scheduler to runOneIteration every 60
-// TimeUnit.SECONDS
+// AbstractScheduledService uses Scheduler to runOneIteration every 60 TimeUnit.SECONDS
 public class UDPServer {
     public static void main(String[] args) throws SocketException {
         // lista sincronizzata client-pacchetto-ttl
-        List<ExpectedAck> expectedAcksList = Collections.synchronizedList(new ArrayList<>());
+        List<ExpectedACK> expectedAcksList = Collections.synchronizedList(new ArrayList<>());
         INITSender initSender = new INITSender();
         ACKResponder ackResponder = new ACKResponder(expectedAcksList);
         EchoServer echoServer = new EchoServer(expectedAcksList);
