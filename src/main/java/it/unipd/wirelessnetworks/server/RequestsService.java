@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 class RequestsService extends Thread {
     public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
     private int commandID = 0;
+    private double currentWatt = 0;
     private byte[] buf = new byte[256];
     private List<ExpectedACK> expectedAcksList;
     ClientData map;
@@ -70,11 +71,10 @@ class RequestsService extends Thread {
                                 }
 
                                 // if there's room: status = on, this will be used to send an ON packet to the client
-                                if (watts < map.getAvailableWatts()) {
+                                if (currentWatt + watts < map.getAvailableWatts()) {
                                     statusAction = "ON";
-                                    map.setAvailableWatts(map.getAvailableWatts()-watts);
+                                    currentWatt+=watts;
                                 }
-
                                 // updating server's map of clients
                                 JSONObject mapJson = new JSONObject();
                                 mapJson.put("type", jsonObject.getString("type"));
@@ -86,6 +86,7 @@ class RequestsService extends Thread {
                                 JSONObject replyJson = new JSONObject();
                                 replyJson.put("act", statusAction);
                                 LOGGER.info("[Server] Added client: " + clientAddress + " to internal map, with information: " + mapJson.toString());
+                                LOGGER.info("[Server] updated current power usage: " +currentWatt);
                                 LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                                 sendToClient(clientAddress, replyJson);
                             }
@@ -109,13 +110,14 @@ class RequestsService extends Thread {
                             if (new_watts < old_watts) {
                                 if (currentStatus.equals("ON")) {
                                     statusAction = "ON";
-                                } else if (new_watts < map.getAvailableWatts() + old_watts) {
+                                } else if ((currentWatt - old_watts) + new_watts < map.getAvailableWatts()) {
                                     statusAction = "ON";
                                 }
                                 if (new_watts == 0.0) {
                                     statusAction = "OFF";
                                 }
-                                map.setAvailableWatts(map.getAvailableWatts() + old_watts - new_watts);
+                                currentWatt -= old_watts;
+                                currentWatt += new_watts;
                                 // connect more devices if possible (first come first served)
                                 Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
                                 for (Map.Entry<String, JSONObject> entry : entrySet) {
@@ -124,9 +126,9 @@ class RequestsService extends Thread {
                                     // only if the client is off
                                     if (status.equals("OFF")) {
                                         // if there's room for it
-                                        if (entryWatts < map.getAvailableWatts()) {
+                                        if (currentWatt + entryWatts < map.getAvailableWatts()) {
                                             // update availableWatts
-                                            map.setAvailableWatts(map.getAvailableWatts() - entryWatts);
+                                            currentWatt += entryWatts;
                                             String newClientAddress = entry.getKey();
                                             // send ON packet to this client
                                             JSONObject replyJson = new JSONObject();
@@ -139,12 +141,15 @@ class RequestsService extends Thread {
                             } else {
                                 // now, if the client is ON there may not be room
                                 if (currentStatus.equals("ON")) {
-                                    if (new_watts < map.getAvailableWatts() + old_watts) {
+                                    if ((currentWatt - old_watts) + new_watts < map.getAvailableWatts()) {
                                         // in this case, there still is enough room
                                         statusAction = "ON";
+                                        currentWatt -= old_watts;
+                                        currentWatt += new_watts;
                                     }
                                 }
                             }
+
                             // in any case, update map data for client
                             JSONObject updatedJson = map.getClient(clientAddress);
                             updatedJson.put("status", statusAction);
@@ -154,6 +159,7 @@ class RequestsService extends Thread {
                             // sending ON/OFF packet to client
                             JSONObject replyJson = new JSONObject();
                             replyJson.put("act", statusAction);
+                            LOGGER.info("[Server] updated current power usage: " +currentWatt);
                             LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                             sendToClient(clientAddress, replyJson);
                             break;
