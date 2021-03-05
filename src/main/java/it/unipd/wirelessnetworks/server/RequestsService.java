@@ -161,11 +161,14 @@ class RequestsService extends Thread {
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
+                            int listLen = expectedAcksList.size();
                             LOGGER.info("[Server] Received ACK from: " + clientAddress);
                             Optional<ExpectedACK> optionalExpectedACK =
-                                    expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress) && expectedACK.commandID == jsonObject.getInt("id")).findFirst();
+                                    expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress) && (expectedACK.commandID == jsonObject.getInt("id"))).findFirst();
                             optionalExpectedACK.ifPresent((e) -> expectedAcksList.remove(e));
-                            LOGGER.info("[Server] Removing ACK from expected ACKs list for client: " + clientAddress);
+                            if(listLen == expectedAcksList.size()+1) {
+                                LOGGER.info("[Server] Removed ACK with ID "+jsonObject.getInt("id")+" from expected ACKs list for client: " + clientAddress);
+                            }
                             break;
                     }
                 }
@@ -178,10 +181,6 @@ class RequestsService extends Thread {
     // this method sends a JSON to a given client and adds an entry to the expectedACKs list
     public void sendToClient(String address, JSONObject json) {
         json.put("id", commandID);
-        commandID += 1;
-        if(commandID == Integer.MAX_VALUE) {
-            commandID = 0;
-        }
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] replyBytes = json.toString().getBytes("UTF-8");
             DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
@@ -189,6 +188,10 @@ class RequestsService extends Thread {
             socket.send(replyPacket);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        commandID += 1;
+        if(commandID == Integer.MAX_VALUE) {
+            commandID = 0;
         }
     }
 
