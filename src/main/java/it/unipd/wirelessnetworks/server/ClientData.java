@@ -10,6 +10,7 @@ import java.util.Set;
 
 class ClientData {
     private Map<String, JSONObject> clientsMap;
+    private double availableWatts;
     private static ClientData instance;
 
     public static ClientData getInstance() {
@@ -21,6 +22,15 @@ class ClientData {
 
     private ClientData() {
         clientsMap = Collections.synchronizedMap(new HashMap<>());
+        availableWatts = 3000d;
+    }
+
+    public double getAvailableWatts() {
+        return availableWatts;
+    }
+
+    public void setAvailableWatts(double aW) {
+        availableWatts = aW;
     }
 
     public boolean containsKey(String address) {
