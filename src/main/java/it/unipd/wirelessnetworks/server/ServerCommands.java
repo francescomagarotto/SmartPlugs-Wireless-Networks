@@ -7,7 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-class ServerCommands {
+public class ServerCommands {
     private static void clientONOFF(String address, String onoff) {
         JSONObject json = new JSONObject();
         json.put("act", onoff);
