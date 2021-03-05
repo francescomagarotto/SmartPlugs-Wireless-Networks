@@ -1,272 +1,95 @@
 package it.unipd.wirelessnetworks.server;
 
+
+import it.unipd.wirelessnetworks.server.servlet.HelloServlet;
+import org.apache.catalina.Context;
+import org.apache.catalina.startup.Tomcat;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.*;
-import java.util.Set;
-import java.util.ArrayList;
+import java.io.PrintWriter;
+import java.util.*;
 
 class Configurations {
     public static int PORT = 4210;
     public static int TTL = 5;
 }
 
-class ClientData {
-    private Map<String, JSONObject> clientsMap = Collections.synchronizedMap(new HashMap<>());
-    private static ClientData instance = new ClientData();
-
-    public static ClientData getInstance() {
-        return instance;
-    }
-
-    private ClientData() {}
-
-    public boolean containsKey(String address) {
-        return clientsMap.containsKey(address);
-    }
-
-    public void putClient(String address, JSONObject data) {
-        clientsMap.put(address, data);
-    }
-
-    public JSONObject getClient(String address) {
-        return clientsMap.get(address);
-    }
-
-    public Set<Map.Entry<String, JSONObject>> entrySet() {
-        return clientsMap.entrySet();
-    }
-
-    public JSONObject getAllClients() {
-        JSONObject json = new JSONObject(clientsMap);
-        return json;
-    }
-}
-
-class ServerCommands {
-    private static void clientONOFF(String address, String onoff) {
-        JSONObject json = new JSONObject();
-        json.put("act", onoff);
-        try (DatagramSocket socket = new DatagramSocket()) {
-            byte[] replyBytes = json.toString().getBytes("UTF-8");
-            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
-            socket.send(replyPacket);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public static void clientON(String address) {
-        clientONOFF(address, "ON");
-    }
-
-    public static void clientOFF(String address) {
-        clientONOFF(address, "OFF");
-    }
-}
-
-class EchoServer extends Thread {
-    public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
-    private byte[] buf = new byte[256];
-    private double availableWatts = 1510d;
-    private List<ExpectedACK> expectedAcksList;
-    ClientData map;
-    Map<String, Integer> wattsDeviceMap;
-
-    public EchoServer(List<ExpectedACK> expectedAcksList) throws SocketException {
-        this.expectedAcksList = expectedAcksList;
-        map = ClientData.getInstance();
-        wattsDeviceMap = new HashMap<>();
-        wattsDeviceMap.put("DRYER", 3000);
-        wattsDeviceMap.put("STOVE", 3000);
-        wattsDeviceMap.put("OVEN", 3000);
-        wattsDeviceMap.put("IRON", 2000);
-        wattsDeviceMap.put("DISHWASHER", 1800);
-        wattsDeviceMap.put("WASHINGMACHINE", 500);
-        wattsDeviceMap.put("HUMIDIFIER", 500);
-        wattsDeviceMap.put("DEHUMIDIFIER", 300);
-        wattsDeviceMap.put("COFFEEMACHINE", 300);
-        wattsDeviceMap.put("PC", 250);
-        wattsDeviceMap.put("TV", 120);
-        wattsDeviceMap.put("LAMP", 40);
-        wattsDeviceMap.put("CHARGER", 5);
-    }
-
-    public void run() {
-        while (true) {
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            try (DatagramSocket socket = new DatagramSocket(Configurations.PORT)) {
-                socket.receive(packet); // receiving packet from client
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String clientAddress = inetAddressToString(packet.getAddress());    
-            try {
-                // avoid reading own packets
-                String localAddress = InetAddress.getLocalHost().getHostAddress();
-                if (!((clientAddress).contains(localAddress))) {
-                    String received = new String(packet.getData(), 0, packet.getLength());
-                    received = received.substring(1, received.length()-1);
-                    LOGGER.info("[Server] Received: "+received+" from Client: "+clientAddress);
-                    JSONObject jsonObject = new JSONObject(received);
-                    String statusAction = "OFF";
-                    DatagramPacket replyPacket;
-                    switch (jsonObject.getString("act")) {
-                        case "INIT":
-                            if (map.containsKey(clientAddress)) {
-                                // TODO: fringe case: if client doesn't respond to INIT for long enough: set status to off
-                            } else {
-                                // if client unknown to server: add to map<address, JSON>, reply with on/off
-                                // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
-                                LOGGER.info("[Server] Client: "+clientAddress+" is connecting for the first time");
-                                double watts = jsonObject.getDouble("max_power_usage");
-                                if (watts == 0d) {
-                                    watts = wattsDeviceMap.get(jsonObject.getString("type"));
-                                }
-                                
-                                // if there's room: status = on, this will be used to send an ON packet to the client
-                                if (watts < availableWatts) {
-                                    statusAction = "ON";
-                                    availableWatts -= watts;
-                                }
-
-                                // updating server's map of clients
-                                JSONObject mapJson = new JSONObject();
-                                mapJson.put("type", jsonObject.getString("type"));
-                                mapJson.put("watts", watts);
-                                mapJson.put("max_power_usage", watts);
-                                mapJson.put("status", statusAction);
-                                map.putClient(clientAddress, mapJson);
-                                // sending ON/OFF packet to client
-                                JSONObject replyJson = new JSONObject();
-                                replyJson.put("act", statusAction);
-                                LOGGER.info("[Server] Added client: "+clientAddress+" to internal map, with information: "+mapJson.toString());
-                                LOGGER.info("[Server] Replying to client: "+clientAddress+" with: "+replyJson.toString());
-                                sendToClient(clientAddress, replyJson);
-                            }
-                        break;
-                        case "UPDATE":
-                            // if there's no room for client reply with off (should the server w8 for ACK?),
-                            // else, if change is negative check if more clients can connect
-                            // comparing previous wattage to new wattage
-                            LOGGER.info("[Server] Received UPDATE packet from Client: "+clientAddress);
-                            double new_watts = jsonObject.getDouble("active_power");
-                            double old_watts = map.getClient(clientAddress).getDouble("watts");
-                            double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
-                            String currentStatus = map.getClient(clientAddress).getString("status");
-                            double max_watts;
-                            if (new_watts > old_max_watts)
-                                max_watts = new_watts;
-                            else 
-                                max_watts = old_max_watts;
-                            // availableWatts += old_watts;
-                            // now device usage is lower so: device stays connected, maybe more device can connect
-                            if (new_watts < old_watts) {
-                                if (currentStatus.equals("ON")) {
-                                    statusAction = "ON";
-                                } else if (new_watts < availableWatts+old_watts) {
-                                    statusAction = "ON";
-                                }
-                                if (new_watts == 0.0) {
-                                    statusAction = "OFF";
-                                }
-                                availableWatts += (old_watts-new_watts);
-                                // connect more devices if possible (first come first served)
-                                Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
-                                for (Map.Entry<String, JSONObject> entry : entrySet) {
-                                    double entryWatts = entry.getValue().getDouble("max_power_usage");
-                                    String status = entry.getValue().getString("status");
-                                    // only if the client is off
-                                    if (status.equals("OFF")) {
-                                        // if there's room for it
-                                        if (entryWatts < availableWatts) {
-                                            // update availableWatts
-                                            availableWatts -= entryWatts;
-                                            String newClientAddress = entry.getKey();
-                                            // send ON packet to this client
-                                            JSONObject replyJson = new JSONObject();
-                                            replyJson.put("act", "ON");
-                                            LOGGER.info("[Server] UPDATE from client: "+clientAddress+" allows: "+newClientAddress+" to also turn ON, sending packet: "+replyJson.toString());
-                                            sendToClient(newClientAddress, replyJson);
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                // now, if the client is ON there may not be room
-                                if (currentStatus.equals("ON")) {
-                                    if(new_watts < availableWatts+old_watts) {
-                                        // in this case, there still is enough room
-                                        statusAction = "ON";
-                                    }
-                                }
-                            }
-                            // in any case, update map data for client
-                            JSONObject updatedJson = map.getClient(clientAddress);
-                            updatedJson.put("status", statusAction);
-                            updatedJson.put("watts", new_watts);
-                            updatedJson.put("max_power_usage", max_watts);
-                            map.putClient(clientAddress, updatedJson);
-                            // sending ON/OFF packet to client
-                            JSONObject replyJson = new JSONObject();
-                            replyJson.put("act", statusAction);
-                            LOGGER.info("[Server] Replying to client: "+clientAddress+" with: "+replyJson.toString());
-                            sendToClient(clientAddress, replyJson);
-                        break;
-                        case "ACK":
-                            // if an ACK is received, remove from list of expected ACKs
-                            LOGGER.info("[Server] Received ACK from: "+clientAddress);
-                            for (ExpectedACK expected : expectedAcksList) {
-                                if (expected.clientAddress.equals(clientAddress)) {
-                                    expectedAcksList.remove(expected);
-                                    LOGGER.info("[Server] Removing ACK from expected ACKs list for client: "+clientAddress);
-                                }
-                            }
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // this method sends a JSON to a given client and adds an entry to the expectedACKs list
-    public void sendToClient(String address, JSONObject json) {
-        try (DatagramSocket socket = new DatagramSocket()) {
-            byte[] replyBytes = json.toString().getBytes("UTF-8");
-            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
-            expectedAcksList.add(new ExpectedACK(address, replyPacket, Configurations.TTL));
-            socket.send(replyPacket);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public String inetAddressToString(InetAddress address) {
-        String strAddress = address.toString();
-        if (strAddress.startsWith("/"))
-            return strAddress.substring(1);
-        else
-            return strAddress;
-    }
-}
-
 // AbstractScheduledService uses Scheduler to runOneIteration every 60 TimeUnit.SECONDS
 public class UDPServer {
-    public static void main(String[] args) throws SocketException {
+
+
+    public static void main(String[] args) throws Exception {
         // lista sincronizzata client-pacchetto-ttl
         List<ExpectedACK> expectedAcksList = Collections.synchronizedList(new ArrayList<>());
         INITSender initSender = new INITSender();
         ACKResponder ackResponder = new ACKResponder(expectedAcksList);
-        EchoServer echoServer = new EchoServer(expectedAcksList);
-        echoServer.start();
+        RequestsService requestsService = new RequestsService(expectedAcksList);
+        requestsService.start();
         initSender.startAsync();
         ackResponder.startAsync();
+        Tomcat tomcat = new Tomcat();
+        tomcat.setPort(8080);
+        tomcat.setBaseDir("temp");
+        tomcat.setPort(8080);
+
+        String contextPath = "/";
+        String docBase = new File(".").getAbsolutePath();
+
+        Context context = tomcat.addContext(contextPath, docBase);
+
+        HttpServlet servlet = new HttpServlet() {
+            @Override
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+                    throws ServletException, IOException {
+                PrintWriter writer = resp.getWriter();
+
+                writer.println(ClientData.getInstance().getAllClients().toString());
+            }
+        };
+
+        String servletName = "pluginfo";
+        String urlPattern = "/pluginfo";
+
+        tomcat.addServlet(contextPath, servletName, servlet);
+
+        tomcat.addServlet(contextPath, "plugcmd", new HelloServlet() {
+            @Override
+            protected  void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                StringBuffer jb = new StringBuffer();
+                String line = null;
+                try {
+                    BufferedReader reader = req.getReader();
+                    while ((line = reader.readLine()) != null)
+                        jb.append(line);
+                } catch (Exception e) { /*report an error*/ }
+
+                try {
+                    JSONObject jsonObject =  new JSONObject(jb.toString());
+                    if(jsonObject.getString("act").equals("OFF")) {
+                        ServerCommands.clientOFF(jsonObject.getString("ip"));
+                    }
+                    else if(jsonObject.getString("act").equals("ON")) {
+                        ServerCommands.clientON(jsonObject.getString("ip"));
+                    }
+                } catch (JSONException e) {
+                    // crash and burn
+                    throw new IOException("Error parsing JSON request string");
+                }
+
+
+            }
+        });
+        context.addServletMappingDecoded(urlPattern, servletName);
+        context.addServletMappingDecoded("/plugcmd", "plugcmd");
+        tomcat.start();
+        tomcat.getServer().await();
     }
 }

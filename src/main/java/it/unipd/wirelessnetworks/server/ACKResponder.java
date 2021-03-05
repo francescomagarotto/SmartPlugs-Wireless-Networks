@@ -3,6 +3,7 @@ package it.unipd.wirelessnetworks.server;
 import com.google.common.util.concurrent.AbstractScheduledService;
 
 import java.net.DatagramSocket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -15,16 +16,18 @@ public class ACKResponder extends AbstractScheduledService {
 
     @Override
     protected void runOneIteration() throws Exception {
+        List<ExpectedACK> toRemove = new ArrayList<>();
         for (ExpectedACK expected : expectedAcksList) {
             if (expected.ttl <= 0) {
                 DatagramSocket socket = new DatagramSocket();
                 socket.send(expected.packetToResend);
                 socket.close();
-                expectedAcksList.remove(expected);
+                toRemove.add(expected);
             } else {
                 expected.ttl -= 1;
             }
         }
+        expectedAcksList.removeAll(toRemove);
     }
 
     @Override

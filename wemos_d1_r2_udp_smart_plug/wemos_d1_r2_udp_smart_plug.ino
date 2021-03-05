@@ -6,7 +6,7 @@
 #include <ModbusMaster.h>
 
 auto timer = timer_create_default();
-
+bool expired;
 
 SoftwareSerial pzem(D5, D6);
 ModbusMaster node;// (RX,TX) connect to TX,RX of PZEM for NodeMCU
@@ -84,32 +84,39 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
   StaticJsonDocument<200> doc;
   JsonObject obj = doc.createNestedObject();
   const char* s = jsonDocument["act"];
-  if (strcmp(s, "INIT") == 0) {
+  bool performMessage = false;
+  if (strcmp(s, "INIT") == 0 && !serverIPAddress.isSet()) {
     serverIPAddress = IPAddress(remoteIP);
     //serverPort = remotePort;
     obj["act"] = "INIT";
     obj["type"] = "DISHWASHER";
     obj["max_power_usage"] = max_usage;
+    performMessage = true;
     obj["sts"] = digitalRead(RELAY);
   }
   else if (strcmp(s, "SET") == 0) {
       max_usage = jsonDocument["max_usage"].as<double>();
       obj["act"] = "ACK";
       obj["max_power_usage"] = max_usage;
+      performMessage = true;
     }
   else if (strcmp(s, "ON") == 0) {
-    obj["act"] = "ON";
+    obj["act"] = "ACK";
     digitalWrite(RELAY, HIGH);
     obj["sts"] = digitalRead(RELAY);
+    performMessage = true;
   }
   else if (strcmp(s, "OFF") == 0) {
-    obj["act"] = "OFF";
+    obj["act"] = "ACK";
     digitalWrite(RELAY, LOW);
     obj["sts"] = digitalRead(RELAY);
+    performMessage = true;
   }
+  if(performMessage) {
   Udp.beginPacket(remoteIP, serverPort);
   serializeJson(doc, Udp);
   Udp.endPacket();
+  }
 }
 
 bool check(void*) {
