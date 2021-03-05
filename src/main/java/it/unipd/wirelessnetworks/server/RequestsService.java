@@ -10,7 +10,7 @@ import java.net.SocketException;
 import java.util.*;
 import java.util.logging.Logger;
 
-class RequestsService extends Thread implements Observer {
+class RequestsService extends Thread /*implements Observer */{
     public static final Logger LOGGER = Logger.getLogger(RequestsService.class.getName());
     private int commandID = 0;
     private double currentWatt = 0;
@@ -59,9 +59,7 @@ class RequestsService extends Thread implements Observer {
                     DatagramPacket replyPacket;
                     switch (jsonObject.getString("act")) {
                         case "INIT":
-                            if (map.containsKey(clientAddress)) {
-                                // TODO: fringe case: if client doesn't respond to INIT for long enough: set status to off
-                            } else {
+                            if (!map.containsKey(clientAddress)) {
                                 // if client unknown to server: add to map<address, JSON>, reply with on/off
                                 // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
                                 LOGGER.info("[Server] Client: " + clientAddress + " is connecting for the first time");
@@ -73,7 +71,7 @@ class RequestsService extends Thread implements Observer {
                                 // if there's room: status = on, this will be used to send an ON packet to the client
                                 if (currentWatt + watts < map.getAvailableWatts()) {
                                     statusAction = "ON";
-                                    currentWatt+=watts;
+                                    currentWatt += watts;
                                 }
                                 // updating server's map of clients
                                 JSONObject mapJson = new JSONObject();
@@ -86,10 +84,11 @@ class RequestsService extends Thread implements Observer {
                                 JSONObject replyJson = new JSONObject();
                                 replyJson.put("act", statusAction);
                                 LOGGER.info("[Server] Added client: " + clientAddress + " to internal map, with information: " + mapJson.toString());
-                                LOGGER.info("[Server] updated current power usage: " +currentWatt);
+                                LOGGER.info("[Server] updated current power usage: " + currentWatt);
                                 LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                                 sendToClient(clientAddress, replyJson);
                             }
+                            // TODO: else fringe case: if client doesn't respond to INIT for long enough: set status to off
                             break;
                         case "UPDATE":
                             // if there's no room for client reply with off (should the server w8 for ACK?),
@@ -159,7 +158,7 @@ class RequestsService extends Thread implements Observer {
                             // sending ON/OFF packet to client
                             JSONObject replyJson = new JSONObject();
                             replyJson.put("act", statusAction);
-                            LOGGER.info("[Server] updated current power usage: " +currentWatt);
+                            LOGGER.info("[Server] updated current power usage: " + currentWatt);
                             LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                             sendToClient(clientAddress, replyJson);
                             break;
@@ -170,8 +169,8 @@ class RequestsService extends Thread implements Observer {
                             Optional<ExpectedACK> optionalExpectedACK =
                                     expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress) && (expectedACK.commandID == jsonObject.getInt("id"))).findFirst();
                             optionalExpectedACK.ifPresent((e) -> expectedAcksList.remove(e));
-                            if(listLen == expectedAcksList.size()+1) {
-                                LOGGER.info("[Server] Removed ACK with ID "+jsonObject.getInt("id")+" from expected ACKs list for client: " + clientAddress);
+                            if (listLen == expectedAcksList.size() + 1) {
+                                LOGGER.info("[Server] Removed ACK with ID " + jsonObject.getInt("id") + " from expected ACKs list for client: " + clientAddress);
                             }
                             break;
                     }
@@ -194,7 +193,7 @@ class RequestsService extends Thread implements Observer {
             e.printStackTrace();
         }
         commandID += 1;
-        if(commandID == Integer.MAX_VALUE) {
+        if (commandID == Integer.MAX_VALUE) {
             commandID = 0;
         }
     }
@@ -207,9 +206,9 @@ class RequestsService extends Thread implements Observer {
             return strAddress;
     }
 
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		LOGGER.info("[OBSERVER] : " + arg1);	
+    /*@Override
+    public void update(Observable arg0, Object arg1) {
+        LOGGER.info("[OBSERVER] : " + arg1);
         System.out.println("ECCOCI QUI!");
-	}
+    }*/
 }
