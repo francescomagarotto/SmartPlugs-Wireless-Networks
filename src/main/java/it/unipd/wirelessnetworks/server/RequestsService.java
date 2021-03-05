@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 class RequestsService extends Thread {
     public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
+    private int commandID = 0;
     private byte[] buf = new byte[256];
     private double availableWatts = 3000d;
     private List<ExpectedACK> expectedAcksList;
@@ -162,7 +163,7 @@ class RequestsService extends Thread {
                             // if an ACK is received, remove from list of expected ACKs
                             LOGGER.info("[Server] Received ACK from: " + clientAddress);
                             Optional<ExpectedACK> optionalExpectedACK =
-                                    expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress)).findFirst();
+                                    expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress) && expectedACK.commandID == jsonObject.getInt("id")).findFirst();
                             optionalExpectedACK.ifPresent((e) -> expectedAcksList.remove(e));
                             LOGGER.info("[Server] Removing ACK from expected ACKs list for client: " + clientAddress);
                             break;
@@ -176,10 +177,15 @@ class RequestsService extends Thread {
 
     // this method sends a JSON to a given client and adds an entry to the expectedACKs list
     public void sendToClient(String address, JSONObject json) {
+        json.put("id", commandID);
+        commandID += 1;
+        if(commandID == Integer.MAX_VALUE) {
+            commandID = 0;
+        }
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] replyBytes = json.toString().getBytes("UTF-8");
             DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
-            expectedAcksList.add(new ExpectedACK(address, replyPacket, Configurations.TTL));
+            expectedAcksList.add(new ExpectedACK(address, commandID, replyPacket, Configurations.TTL));
             socket.send(replyPacket);
         } catch (Exception e) {
             e.printStackTrace();
