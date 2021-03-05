@@ -10,8 +10,8 @@ import java.net.SocketException;
 import java.util.*;
 import java.util.logging.Logger;
 
-class RequestsService extends Thread {
-    public static final Logger LOGGER = Logger.getLogger(INITSender.class.getName());
+class RequestsService extends Thread implements Observer {
+    public static final Logger LOGGER = Logger.getLogger(RequestsService.class.getName());
     private int commandID = 0;
     private double currentWatt = 0;
     private byte[] buf = new byte[256];
@@ -206,4 +206,10 @@ class RequestsService extends Thread {
         else
             return strAddress;
     }
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		LOGGER.info("[OBSERVER] : " + arg1);	
+        System.out.println("ECCOCI QUI!");
+	}
 }

@@ -6,9 +6,10 @@ import org.json.JSONObject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Set;
 
-class ClientData {
+public class ClientData extends Observable {
     private Map<String, JSONObject> clientsMap;
     private double availableWatts;
     private static ClientData instance;
@@ -31,6 +32,8 @@ class ClientData {
 
     public void setAvailableWatts(double aW) {
         availableWatts = aW;
+        setChanged();
+        notifyObservers(aW);
     }
 
     public boolean containsKey(String address) {
@@ -39,6 +42,8 @@ class ClientData {
 
     public void putClient(String address, JSONObject data) {
         clientsMap.put(address, data);
+        setChanged();
+        notifyObservers();
     }
 
     public JSONObject getClient(String address) {
