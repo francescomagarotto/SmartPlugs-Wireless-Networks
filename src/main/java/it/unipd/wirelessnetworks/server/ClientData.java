@@ -8,11 +8,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ClientData {
@@ -85,7 +81,7 @@ public class ClientData {
 
     public void writeClient() {
         try (PrintWriter out = new PrintWriter(clientMapFile)) {
-            out.write(clientsMap.toString());
+            out.write(new JSONObject(clientsMap).toString());
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -104,10 +100,16 @@ public class ClientData {
         return contentBuilder.toString();
     }
 
-    public Map<String, JSONObject> jsonToMap(JSONObject json) {
-        Map<String, Object> aux_map = json.toMap();
+    public static Map<String, JSONObject> jsonToMap(JSONObject json) {
         Map<String, JSONObject> map = new HashMap<>();
-        aux_map.forEach((k, v) -> map.put(k, (JSONObject) v));
+
+        Iterator<?> keys = json.keys();
+
+        while( keys.hasNext() ){
+            String key = (String) keys.next();
+            JSONObject value = json.getJSONObject(key);
+            map.put(key, value);
+        }
         return map;
     }
 
