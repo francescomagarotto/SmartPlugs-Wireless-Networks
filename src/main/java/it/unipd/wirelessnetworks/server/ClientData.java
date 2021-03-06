@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 
-public class ClientData extends Observable {
+public class ClientData {
     private Map<String, JSONObject> clientsMap;
     private double availableWatts;
     private static ClientData instance;
@@ -32,8 +32,6 @@ public class ClientData extends Observable {
 
     public void setAvailableWatts(double aW) {
         availableWatts = aW;
-        setChanged();
-        notifyObservers(aW);
     }
 
     public boolean containsKey(String address) {
@@ -42,8 +40,6 @@ public class ClientData extends Observable {
 
     public void putClient(String address, JSONObject data) {
         clientsMap.put(address, data);
-        setChanged();
-        notifyObservers();
     }
 
     public JSONObject getClient(String address) {

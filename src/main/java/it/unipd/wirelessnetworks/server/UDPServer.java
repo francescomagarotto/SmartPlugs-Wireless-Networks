@@ -23,8 +23,6 @@ class Configurations {
 
 // AbstractScheduledService uses Scheduler to runOneIteration every 60 TimeUnit.SECONDS
 public class UDPServer {
-
-
     public static void main(String[] args) throws Exception {
         final Logger LOGGER = Logger.getLogger(UDPServer.class.getName());
         // lista sincronizzata client-pacchetto-ttl
@@ -35,8 +33,6 @@ public class UDPServer {
         requestsService.start();
         initSender.startAsync();
         ackResponder.startAsync();
-
-        ClientData.getInstance().addObserver(requestsService);
         Tomcat tomcat = new Tomcat();
         tomcat.setPort(8080);
         tomcat.setBaseDir("temp");
