@@ -22,20 +22,7 @@ class RequestsService extends Thread /*implements Observer */{
     public RequestsService(List<ExpectedACK> expectedAcksList) throws SocketException {
         this.expectedAcksList = expectedAcksList;
         map = ClientData.getInstance();
-        wattsDeviceMap = new HashMap<>();
-        wattsDeviceMap.put("DRYER", 3000);
-        wattsDeviceMap.put("STOVE", 3000);
-        wattsDeviceMap.put("OVEN", 3000);
-        wattsDeviceMap.put("IRON", 2000);
-        wattsDeviceMap.put("DISHWASHER", 1800);
-        wattsDeviceMap.put("WASHINGMACHINE", 500);
-        wattsDeviceMap.put("HUMIDIFIER", 500);
-        wattsDeviceMap.put("DEHUMIDIFIER", 300);
-        wattsDeviceMap.put("COFFEEMACHINE", 300);
-        wattsDeviceMap.put("PC", 250);
-        wattsDeviceMap.put("TV", 120);
-        wattsDeviceMap.put("LAMP", 40);
-        wattsDeviceMap.put("CHARGER", 5);
+        wattsDeviceMap = map.getDefaultWattsDevice();
     }
 
     public void run() {
@@ -99,7 +86,7 @@ class RequestsService extends Thread /*implements Observer */{
                             double new_watts = jsonObject.getDouble("active_power");
                             double old_watts = map.getClient(clientAddress).getDouble("watts");
                             double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
-                            String currentStatus = map.getClient(clientAddress).getString("status");
+                            //String currentStatus = map.getClient(clientAddress).getString("status");
                             double max_watts;
                             if (new_watts > old_max_watts)
                                 max_watts = new_watts;
