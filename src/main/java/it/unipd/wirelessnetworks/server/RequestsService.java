@@ -106,62 +106,16 @@ class RequestsService extends Thread implements Observer {
                                 max_watts = new_watts;
                             else
                                 max_watts = old_max_watts;
-                            // now device usage is lower so: device stays connected, maybe more device can connect
-                            if (new_watts < old_watts) {
-                                if (currentStatus.equals("ON")) {
-                                    statusAction = "ON";
-                                } else if ((currentWatt - old_watts) + new_watts < map.getAvailableWatts()) {
-                                    statusAction = "ON";
-                                }
-                                if (new_watts == 0.0) {
-                                    statusAction = "OFF";
-                                }
-                                currentWatt -= old_watts;
-                                currentWatt += new_watts;
-                                // connect more devices if possible (first come first served)
-                                Set<Map.Entry<String, JSONObject>> entrySet = map.entrySet();
-                                for (Map.Entry<String, JSONObject> entry : entrySet) {
-                                    double entryWatts = entry.getValue().getDouble("max_power_usage");
-                                    String status = entry.getValue().getString("status");
-                                    // only if the client is off
-                                    if (status.equals("OFF")) {
-                                        // if there's room for it
-                                        if (currentWatt + entryWatts < map.getAvailableWatts()) {
-                                            // update availableWatts
-                                            currentWatt += entryWatts;
-                                            String newClientAddress = entry.getKey();
-                                            // send ON packet to this client
-                                            JSONObject replyJson = new JSONObject();
-                                            replyJson.put("act", "ON");
-                                            LOGGER.info("[Server] UPDATE from client: " + clientAddress + " allows: " + newClientAddress + " to also turn ON, sending packet: " + replyJson.toString());
-                                            sendToClient(newClientAddress, replyJson);
-                                        }
-                                    }
-                                }
-                            } else {
-                                // now, if the client is ON there may not be room
-                                if (currentStatus.equals("ON")) {
-                                    if ((currentWatt - old_watts) + new_watts < map.getAvailableWatts()) {
-                                        // in this case, there still is enough room
-                                        statusAction = "ON";
-                                        currentWatt -= old_watts;
-                                        currentWatt += new_watts;
-                                    }
-                                }
-                            }
 
+                            currentWatt -= old_watts;
+                            currentWatt += new_watts;
                             // in any case, update map data for client
                             JSONObject updatedJson = map.getClient(clientAddress);
                             updatedJson.put("status", statusAction);
                             updatedJson.put("watts", new_watts);
                             updatedJson.put("max_power_usage", max_watts);
                             map.putClient(clientAddress, updatedJson);
-                            // sending ON/OFF packet to client
-                            JSONObject replyJson = new JSONObject();
-                            replyJson.put("act", statusAction);
                             LOGGER.info("[Server] updated current power usage: " +currentWatt);
-                            LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
-                            sendToClient(clientAddress, replyJson);
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
