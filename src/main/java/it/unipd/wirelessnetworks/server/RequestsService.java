@@ -23,6 +23,7 @@ class RequestsService extends Thread /*implements Observer */{
         this.expectedAcksList = expectedAcksList;
         map = ClientData.getInstance();
         wattsDeviceMap = map.getDefaultWattsDevice();
+        currentWatt = map.getAllClients().getDouble("currentConsume");
     }
 
     public void run() {
@@ -74,8 +75,8 @@ class RequestsService extends Thread /*implements Observer */{
                                 LOGGER.info("[Server] updated current power usage: " + currentWatt);
                                 LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                                 sendToClient(clientAddress, replyJson);
-                                LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             }
+                            LOGGER.info("[Server] Status " + new JSONObject(map).toString());
                             // TODO: else fringe case: if client doesn't respond to INIT for long enough: set status to off
                             break;
                         case "UPDATE":
