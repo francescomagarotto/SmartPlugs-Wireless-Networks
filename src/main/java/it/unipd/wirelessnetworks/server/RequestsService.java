@@ -61,7 +61,8 @@ class RequestsService extends Thread /*implements Observer */{
                                 if (currentWatt + watts < map.getAvailableWatts()) {
                                     statusAction = 1;
                                     currentWatt += watts;
-                                }*/
+                                }
+                                */
                                 // updating server's map of clients
                                 JSONObject mapJson = new JSONObject();
                                 mapJson.put("type", jsonObject.getString("type"));
