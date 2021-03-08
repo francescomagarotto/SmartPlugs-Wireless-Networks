@@ -118,7 +118,18 @@ public class ClientData {
     }
 
     public JSONObject getAllClients() {
-        JSONObject json = new JSONObject(clientsMap);
+        double currentConsume = 0.0;
+        List<JSONObject> plugs = new ArrayList<>();
+        for (Map.Entry<String, JSONObject> entry : clientsMap.entrySet()) {
+            JSONObject plg = new JSONObject(entry.getValue(), JSONObject.getNames(entry.getValue()));
+            plg.put("address", entry.getKey());
+            plugs.add(plg);
+            currentConsume += plg.getDouble("watts");
+        }
+        JSONObject json = new JSONObject();
+        json.put("availableWatts", availableWatts);
+        json.put("currentConsume", currentConsume);
+        json.put("plugs", plugs);
         return json;
     }
 }

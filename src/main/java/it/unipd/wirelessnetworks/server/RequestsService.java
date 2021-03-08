@@ -74,6 +74,7 @@ class RequestsService extends Thread /*implements Observer */{
                                 LOGGER.info("[Server] updated current power usage: " + currentWatt);
                                 LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                                 sendToClient(clientAddress, replyJson);
+                                LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             }
                             // TODO: else fringe case: if client doesn't respond to INIT for long enough: set status to off
                             break;
@@ -102,6 +103,7 @@ class RequestsService extends Thread /*implements Observer */{
                             updatedJson.put("max_power_usage", max_watts);
                             map.putClient(clientAddress, updatedJson);
                             LOGGER.info("[Server] updated current power usage: " +currentWatt);
+                            LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
@@ -113,6 +115,7 @@ class RequestsService extends Thread /*implements Observer */{
                             if (listLen == expectedAcksList.size() + 1) {
                                 LOGGER.info("[Server] Removed ACK with ID " + jsonObject.getInt("id") + " from expected ACKs list for client: " + clientAddress);
                             }
+                            LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                     }
                 }
