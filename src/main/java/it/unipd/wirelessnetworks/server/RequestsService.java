@@ -43,7 +43,7 @@ class RequestsService extends Thread /*implements Observer */{
                     received = received.substring(1, received.length() - 1);
                     LOGGER.info("[Server] Received: " + received + " from Client: " + clientAddress);
                     JSONObject jsonObject = new JSONObject(received);
-                    String statusAction = "OFF";
+                    int statusAction = 0;
                     DatagramPacket replyPacket;
                     switch (jsonObject.getString("act")) {
                         case "INIT":
@@ -58,7 +58,7 @@ class RequestsService extends Thread /*implements Observer */{
 
                                 // if there's room: status = on, this will be used to send an ON packet to the client
                                 if (currentWatt + watts < map.getAvailableWatts()) {
-                                    statusAction = "ON";
+                                    statusAction = 1;
                                     currentWatt += watts;
                                 }
                                 // updating server's map of clients
@@ -88,7 +88,7 @@ class RequestsService extends Thread /*implements Observer */{
                             double new_watts = jsonObject.getDouble("active_power");
                             double old_watts = map.getClient(clientAddress).getDouble("watts");
                             double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
-                            //String currentStatus = map.getClient(clientAddress).getString("status");
+
                             double max_watts;
                             if (new_watts > old_max_watts)
                                 max_watts = new_watts;
@@ -98,7 +98,7 @@ class RequestsService extends Thread /*implements Observer */{
                             currentWatt -= old_watts;
                             currentWatt += new_watts;
                             if (currentWatt>=0) {
-                                statusAction = "ON";
+                                statusAction = 1;
                             }
                             // in any case, update map data for client
                             JSONObject updatedJson = map.getClient(clientAddress);
