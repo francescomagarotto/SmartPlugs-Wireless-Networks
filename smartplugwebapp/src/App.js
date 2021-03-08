@@ -23,9 +23,10 @@ function App() {
 
   const changeSwitch = (index) => {
     let dataState = Object.create(data);
-    let body = { act: "ON", ip: dataState.plugs[index].address };
+    let body = `{ "act": "ON", "ip": "${dataState.plugs[index].address}"}`;
+    console.log(body);
     if (dataState.plugs[index].status === 1) {
-      body.act = "OFF"
+      body = `{ "act": "OFF", "ip": "${dataState.plugs[index].address}"}`;
     }
     fetch('/plugcmd', {
       method: 'POST',

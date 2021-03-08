@@ -1,1 +1,1 @@
-{"192.168.1.139":{"watts":27.3,"type":"DISHWASHER","max_power_usage":1800,"status":1}}
+{"192.168.178.48":{"watts":0,"type":"DISHWASHER","max_power_usage":1800,"status":0}}
