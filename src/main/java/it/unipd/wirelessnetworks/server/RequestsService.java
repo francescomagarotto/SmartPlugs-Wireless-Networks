@@ -76,7 +76,7 @@ class RequestsService extends Thread /*implements Observer */{
                                 LOGGER.info("[Server] Added client: " + clientAddress + " to internal map, with information: " + mapJson.toString());
                                 LOGGER.info("[Server] updated current power usage: " + currentWatt);
                                 LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
-                                sendToClient(clientAddress, replyJson);
+                                // sendToClient(clientAddress, replyJson);
                             }
                             LOGGER.info("[Server] Status " + new JSONObject(map).toString());
                             // TODO: else fringe case: if client doesn't respond to INIT for long enough: set status to off
