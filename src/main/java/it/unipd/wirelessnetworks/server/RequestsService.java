@@ -97,6 +97,9 @@ class RequestsService extends Thread /*implements Observer */{
 
                             currentWatt -= old_watts;
                             currentWatt += new_watts;
+                            if (currentWatt>=0) {
+                                statusAction = "ON";
+                            }
                             // in any case, update map data for client
                             JSONObject updatedJson = map.getClient(clientAddress);
                             updatedJson.put("status", statusAction);
