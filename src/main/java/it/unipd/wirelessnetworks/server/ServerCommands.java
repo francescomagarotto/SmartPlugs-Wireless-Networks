@@ -9,6 +9,13 @@ import java.net.InetAddress;
 
 public class ServerCommands {
     private static void clientONOFF(String address, String onoff) {
+        ClientData client = ClientData.getInstance();
+        JSONObject data = client.getClient(address);
+        int status = 0;
+        if (onoff.equals("ON"))
+            status = 1;
+        data.put("status", status);
+        client.putClient(address, data);
         JSONObject json = new JSONObject();
         json.put("act", onoff);
         try (DatagramSocket socket = new DatagramSocket()) {
