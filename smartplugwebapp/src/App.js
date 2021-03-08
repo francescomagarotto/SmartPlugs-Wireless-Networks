@@ -8,16 +8,18 @@ function App() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {  //assign interval to a variable to clear it.
-      fetch("localhost:8080/pluginfo")
-       .then(data => setData(data.json()))
-       .catch(function(error) {
-          console.log(error)
-       })
+      console.log("perform polling");
+      fetch("/pluginfo")
+      .then(data => data.json())
+      .then(data => {setData(data); console.log(data)})
+      .catch(function(error) {
+        console.log(error)
+      })
     }, 5000)
   
     return () => clearInterval(intervalId); //This is important
    
-  }, ["localhost:8080/pluginfo", useState])
+  }, ["/pluginfo", useState])
 
   const changeSwitch = (index) => {
     let dataState = Object.create(data);
@@ -25,7 +27,7 @@ function App() {
     if (dataState.plugs[index].status === 1) {
       body.act = "OFF"
     }
-    fetch('localhost:8080/plugcmd', {
+    fetch('/plugcmd', {
       method: 'POST',
       body: body
     }).then((res) => {
@@ -35,12 +37,12 @@ function App() {
       }
     });
   };
-
+  let value = data ? data.currentConsume / data.availableWatts * 100 : 0;
   return (
     <div className="App">
       <div className="col-md-2 offset-md-5 mt-4">
         <h3 className="text-center">Current power usage</h3>
-        <CircularProgressbar value={data ? data.plugs.reduce((acc, ist) => acc + ist.currentCompsumption, 0) / data.totalWattAvailable * 100 : 0} text={`${data ? data.plugs.reduce((acc, ist) => acc + ist.currentCompsumption, 0) / data.totalWattAvailable * 100 : 0}%`} />
+        <CircularProgressbar value={value} text={`${value}%`} />
       </div>
       <div className="row mt-4">
         <div className="col-md-4 offset-md-4">
@@ -49,7 +51,7 @@ function App() {
               <div className="row p-2">
                 <div className="col-8">
                   <h4>{x.type}</h4>
-                  <span>{x.currentCompsumption} W</span>
+                  <span>{x.watts} W</span>
                 </div>
                 <div className="col-4 align-self-center">
                   <Switch disabled={(data.plugs[index].status === 0 && data.currentConsume + data.plugs[index].max_power_usage > data.totalWattAvailable)} onChange={() => changeSwitch(index)} checked={(x.status === 1)} />
