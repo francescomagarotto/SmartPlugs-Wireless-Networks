@@ -1,5 +1,6 @@
 package it.unipd.wirelessnetworks.server;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -107,7 +108,10 @@ public class ClientData {
             JSONObject plg = new JSONObject(entry.getValue(), JSONObject.getNames(entry.getValue()));
             plg.put("address", entry.getKey());
             plugs.add(plg);
-            currentConsume += plg.getDouble("watts");
+            try {
+                currentConsume += plg.getDouble("watts");
+            }
+            catch (JSONException e) {}
         }
         JSONObject json = new JSONObject();
         json.put("availableWatts", availableWatts);

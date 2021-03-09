@@ -107,15 +107,18 @@ class RequestsService extends Thread /*implements Observer */{
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
                             List<ExpectedACK> expectedAcksList = AckListSingleton.getInstance().getExpectedAckList();
-                            int listLen = expectedAcksList.size();
-                            long timestamp = jsonObject.getLong("timestamp");
+                            String timestamp = jsonObject.getString("timestamp");
                             LOGGER.info("[Server] Received ACK from: " + clientAddress);
                             Optional<ExpectedACK> optionalExpectedACK =
                                     expectedAcksList.stream().filter(
                                             expectedACK ->
                                                     expectedACK.clientAddress.equals(clientAddress)
-                                                            && expectedACK.timestamp == timestamp).findFirst();
-                            optionalExpectedACK.ifPresent(expectedAcksList::remove);
+                                                            && expectedACK.timestamp.equals(timestamp)).findFirst();
+                            if(optionalExpectedACK.isPresent()) {
+                                ExpectedACK e = optionalExpectedACK.get();
+                                AckListSingleton.getInstance().getExpectedAckList().remove(e);
+                                LOGGER.info("[Server] Removed " + e.toString());
+                            }
                             LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                     }

@@ -102,14 +102,14 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
     }
   else if (strcmp(s, "ON") == 0) {
     obj["act"] = "ACK";
-    obj["timestamp"] = jsonDocument["timestamp"].as<long>();
+    obj["timestamp"] = jsonDocument["timestamp"].as<String>();
     digitalWrite(RELAY, HIGH);
     obj["sts"] = digitalRead(RELAY);
     performMessage = true;
   }
   else if (strcmp(s, "OFF") == 0) {
     obj["act"] = "ACK";
-    obj["timestamp"] = jsonDocument["timestamp"].as<long>();
+    obj["timestamp"] = jsonDocument["timestamp"].as<String>();
     digitalWrite(RELAY, LOW);
     obj["sts"] = digitalRead(RELAY);
     performMessage = true;
