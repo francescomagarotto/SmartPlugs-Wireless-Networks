@@ -120,36 +120,91 @@ public class ClientData {
     public void writeClient(String address, JSONObject data) {
         String type = data.getString("type");
         double maxPower = data.getDouble("max_power_usage");
+
         try {
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
-            Document document = documentBuilder.newDocument();
+            Document document;
 
-            Element root = document.createElement("plugs");
-            document.appendChild(root);
+            File file = new File(xmlFilePath);
 
-            Element plugEl = document.createElement("plug");
-            root.appendChild(plugEl);
+            if (file.length()!=0) {
+                document = documentBuilder.parse(file);
 
-            Element addrEl = document.createElement("ip");
-            addrEl.appendChild(document.createTextNode(address));
-            plugEl.appendChild(addrEl);
+                NodeList nodeList = document.getElementsByTagName("ip");
 
-            Element maxEl = document.createElement("maxpower");
-            maxEl.appendChild(document.createTextNode(Double.toString(maxPower)));
-            plugEl.appendChild(maxEl);
+                // UPDATES IF ALREADY IS SAVED ----------------------------------------------------
+                for (int itr = 0; itr < nodeList.getLength(); itr++)
+                {
+                    String addr = nodeList.item(itr).getTextContent();
+                    if (addr.equals(address)) {
+                        Node plugNode = nodeList.item(itr).getParentNode();
+                        NodeList fields = plugNode.getChildNodes();
+                        fields.item(1).setTextContent(Double.toString(maxPower));
+                        fields.item(2).setTextContent(type);
 
-            Element typeEl = document.createElement("type");
-            typeEl.appendChild(document.createTextNode(type));
-            plugEl.appendChild(typeEl);
+                        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                        Transformer transformer = transformerFactory.newTransformer();
+                        DOMSource domSource = new DOMSource(document);
+                        StreamResult streamResult = new StreamResult(new File(xmlFilePath));
 
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource domSource = new DOMSource(document);
-            StreamResult streamResult = new StreamResult(new File(xmlFilePath));
+                        transformer.transform(domSource, streamResult);
 
-            transformer.transform(domSource, streamResult);
+                        return;
+                    }
+                }
+                // --------------------------------------------------------------------------------
+                Node root = document.getFirstChild();
 
+                Element plugEl = document.createElement("plug");
+                root.appendChild(plugEl);
+
+                Element addrEl = document.createElement("ip");
+                addrEl.appendChild(document.createTextNode(address));
+                plugEl.appendChild(addrEl);
+
+                Element maxEl = document.createElement("maxpower");
+                maxEl.appendChild(document.createTextNode(Double.toString(maxPower)));
+                plugEl.appendChild(maxEl);
+
+                Element typeEl = document.createElement("type");
+                typeEl.appendChild(document.createTextNode(type));
+                plugEl.appendChild(typeEl);
+
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                DOMSource domSource = new DOMSource(document);
+                StreamResult streamResult = new StreamResult(new File(xmlFilePath));
+
+                transformer.transform(domSource, streamResult);
+            } else {
+                document = documentBuilder.newDocument();
+
+                Element root = document.createElement("plugs");
+                document.appendChild(root);
+
+                Element plugEl = document.createElement("plug");
+                root.appendChild(plugEl);
+
+                Element addrEl = document.createElement("ip");
+                addrEl.appendChild(document.createTextNode(address));
+                plugEl.appendChild(addrEl);
+
+                Element maxEl = document.createElement("maxpower");
+                maxEl.appendChild(document.createTextNode(Double.toString(maxPower)));
+                plugEl.appendChild(maxEl);
+
+                Element typeEl = document.createElement("type");
+                typeEl.appendChild(document.createTextNode(type));
+                plugEl.appendChild(typeEl);
+
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                DOMSource domSource = new DOMSource(document);
+                StreamResult streamResult = new StreamResult(new File(xmlFilePath));
+
+                transformer.transform(domSource, streamResult);
+            }
         } catch (Exception e) {e.printStackTrace();}
     }
 

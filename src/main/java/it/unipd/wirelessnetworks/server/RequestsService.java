@@ -72,6 +72,9 @@ class RequestsService extends Thread /*implements Observer */{
                             // if there's no room for client reply with off (should the server w8 for ACK?),
                             // else, if change is negative check if more clients can connect
                             // comparing previous wattage to new wattage
+
+                            // TODO: if type changed change MAX_POWER to default, update currentWatt and exit
+
                             LOGGER.info("[Server] Received UPDATE packet from Client: " + clientAddress);
                             LOGGER.info("[Message content] " + jsonObject.toString());
                             double new_watts = jsonObject.getDouble("active_power");
