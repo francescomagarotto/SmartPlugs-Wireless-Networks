@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 public class ACKResponder extends AbstractScheduledService {
     List<ExpectedACK> expectedAcksList;
 
-    public ACKResponder(List<ExpectedACK> expectedAcksList) {
-        this.expectedAcksList = expectedAcksList;
+    public ACKResponder() {
+        this.expectedAcksList = AckListSingleton.getInstance().getExpectedAckList();
     }
 
     @Override

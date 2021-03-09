@@ -15,12 +15,11 @@ class RequestsService extends Thread /*implements Observer */{
     private int commandID = 0;
     private double currentWatt = 0;
     private byte[] buf = new byte[256];
-    private List<ExpectedACK> expectedAcksList;
+
     ClientData map;
     Map<String, Integer> wattsDeviceMap;
 
-    public RequestsService(List<ExpectedACK> expectedAcksList) throws SocketException {
-        this.expectedAcksList = expectedAcksList;
+    public RequestsService() throws SocketException {
         map = ClientData.getInstance();
         wattsDeviceMap = map.getDefaultWattsDevice();
         currentWatt = map.getAllClients().getDouble("currentConsume");
@@ -113,14 +112,16 @@ class RequestsService extends Thread /*implements Observer */{
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
+                            List<ExpectedACK> expectedAcksList = AckListSingleton.getInstance().getExpectedAckList();
                             int listLen = expectedAcksList.size();
+                            long timestamp = jsonObject.getLong("timestamp");
                             LOGGER.info("[Server] Received ACK from: " + clientAddress);
                             Optional<ExpectedACK> optionalExpectedACK =
-                                    expectedAcksList.stream().filter(expectedACK -> expectedACK.clientAddress.equals(clientAddress) && (expectedACK.commandID == jsonObject.getInt("id"))).findFirst();
-                            optionalExpectedACK.ifPresent((e) -> expectedAcksList.remove(e));
-                            if (listLen == expectedAcksList.size() + 1) {
-                                LOGGER.info("[Server] Removed ACK with ID " + jsonObject.getInt("id") + " from expected ACKs list for client: " + clientAddress);
-                            }
+                                    expectedAcksList.stream().filter(
+                                            expectedACK ->
+                                                    expectedACK.clientAddress.equals(clientAddress)
+                                                            && expectedACK.timestamp == timestamp).findFirst();
+                            optionalExpectedACK.ifPresent(expectedAcksList::remove);
                             LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                     }
@@ -131,23 +132,6 @@ class RequestsService extends Thread /*implements Observer */{
         }
     }
 
-    // this method sends a JSON to a given client and adds an entry to the expectedACKs list
-    public void sendToClient(String address, JSONObject json) {
-        json.put("id", commandID);
-        try (DatagramSocket socket = new DatagramSocket()) {
-            byte[] replyBytes = json.toString().getBytes("UTF-8");
-            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
-            expectedAcksList.add(new ExpectedACK(address, commandID, replyPacket, Configurations.TTL));
-            socket.send(replyPacket);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        commandID += 1;
-        if (commandID == Integer.MAX_VALUE) {
-            commandID = 0;
-        }
-    }
-
     public String inetAddressToString(InetAddress address) {
         String strAddress = address.toString();
         if (strAddress.startsWith("/"))
@@ -155,10 +139,4 @@ class RequestsService extends Thread /*implements Observer */{
         else
             return strAddress;
     }
-
-    /*@Override
-    public void update(Observable arg0, Object arg1) {
-        LOGGER.info("[OBSERVER] : " + arg1);
-        System.out.println("ECCOCI QUI!");
-    }*/
 }

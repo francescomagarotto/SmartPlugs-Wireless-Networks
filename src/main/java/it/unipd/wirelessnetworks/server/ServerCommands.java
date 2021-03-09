@@ -18,10 +18,15 @@ public class ServerCommands {
         client.putClient(address, data);
         // json to be sent to client
         JSONObject json = new JSONObject();
+        long timestamp = System.currentTimeMillis();
         json.put("act", onoff);
+        json.put("timestamp", timestamp);
         try (DatagramSocket socket = new DatagramSocket()) {
             byte[] replyBytes = json.toString().getBytes("UTF-8");
             DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, InetAddress.getByName(address), Configurations.PORT);
+            AckListSingleton.getInstance().getExpectedAckList().add(
+                    new ExpectedACK(address, timestamp, replyPacket, 5)
+            );
             socket.send(replyPacket);
         } catch (Exception e) { e.printStackTrace(); }
     }
