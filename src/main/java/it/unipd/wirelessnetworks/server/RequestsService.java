@@ -23,7 +23,6 @@ class RequestsService extends Thread /*implements Observer */{
         this.expectedAcksList = expectedAcksList;
         map = ClientData.getInstance();
         wattsDeviceMap = map.getDefaultWattsDevice();
-        currentWatt = map.getAllClients().getDouble("currentConsume");
     }
 
     public void run() {
@@ -47,38 +46,27 @@ class RequestsService extends Thread /*implements Observer */{
                     DatagramPacket replyPacket;
                     switch (jsonObject.getString("act")) {
                         case "INIT":
-                            if (!map.containsKey(clientAddress)) {
-                                // if client unknown to server: add to map<address, JSON>, reply with on/off
-                                // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
-                                LOGGER.info("[Server] Client: " + clientAddress + " is connecting for the first time");
-                                double watts = jsonObject.getDouble("max_power_usage");
-                                if (watts == 0d) {
-                                    watts = wattsDeviceMap.get(jsonObject.getString("type"));
-                                }
-
-                                // if there's room: status = on, this will be used to send an ON packet to the client
-                                /*
-                                if (currentWatt + watts < map.getAvailableWatts()) {
-                                    statusAction = 1;
-                                    currentWatt += watts;
-                                }
-                                */
-                                // updating server's map of clients
-                                JSONObject mapJson = new JSONObject();
-                                mapJson.put("type", jsonObject.getString("type"));
-                                mapJson.put("watts", watts);
-                                mapJson.put("max_power_usage", watts);
-                                mapJson.put("status", statusAction);
-                                map.putClient(clientAddress, mapJson);
-                                // sending ON/OFF packet to client
-                                JSONObject replyJson = new JSONObject();
-                                replyJson.put("act", statusAction);
-                                LOGGER.info("[Server] Added client: " + clientAddress + " to internal map, with information: " + mapJson.toString());
-                                LOGGER.info("[Server] updated current power usage: " + currentWatt);
-                                LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
-                                // sendToClient(clientAddress, replyJson);
+                            // if client unknown to server: add to map<address, JSON>, reply with on/off
+                            // getting usage from client or from default usage map (when client isn't connected to grid and doesn't know usage)
+                            LOGGER.info("[Server] Client: " + clientAddress + " is connecting for the first time");
+                            double watts = jsonObject.getDouble("max_power_usage");
+                            if (watts == 0d) {
+                                watts = wattsDeviceMap.get(jsonObject.getString("type"));
                             }
-                            LOGGER.info("[Server] Status " + new JSONObject(map).toString());
+
+                            // updating server's map of clients
+                            JSONObject mapJson = new JSONObject();
+                            mapJson.put("type", jsonObject.getString("type"));
+                            mapJson.put("watts", 0);
+                            mapJson.put("max_power_usage", watts);
+                            mapJson.put("status", statusAction);
+                            map.putClient(clientAddress, mapJson);
+                            // sending ON/OFF packet to client
+                            JSONObject replyJson = new JSONObject();
+                            replyJson.put("act", statusAction);
+                            LOGGER.info("[Server] Added client: " + clientAddress + " to internal map, with information: " + mapJson.toString());
+                            LOGGER.info("[Server] updated current power usage: " + currentWatt);
+                            LOGGER.info("[Server] Replying to client: " + clientAddress + " with: " + replyJson.toString());
                             // TODO: else fringe case: if client doesn't respond to INIT for long enough: set status to off
                             break;
                         case "UPDATE":
@@ -109,7 +97,7 @@ class RequestsService extends Thread /*implements Observer */{
                             updatedJson.put("max_power_usage", max_watts);
                             map.putClient(clientAddress, updatedJson);
                             LOGGER.info("[Server] updated current power usage: " +currentWatt);
-                            LOGGER.info("[Server] Status " + map.getAllClients().toString());
+                            //LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
