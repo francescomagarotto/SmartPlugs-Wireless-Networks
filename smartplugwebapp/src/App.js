@@ -15,7 +15,7 @@ function App() {
       .catch(function(error) {
         console.log(error)
       })
-    }, 5000)
+    }, 3000)
   
     return () => clearInterval(intervalId); //This is important
    
@@ -38,7 +38,7 @@ function App() {
       }
     });
   };
-  let value = data ? data.currentConsume / data.availableWatts * 100 : 0;
+  let value = data ? Math.round(data.currentConsume / data.availableWatts * 100): 0;
   return (
     <div className="App">
       <div className="col-md-2 offset-md-5 mt-4">

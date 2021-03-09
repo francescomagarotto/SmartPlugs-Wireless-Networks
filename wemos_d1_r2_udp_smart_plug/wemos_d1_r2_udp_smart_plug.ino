@@ -16,7 +16,7 @@ ModbusMaster node;// (RX,TX) connect to TX,RX of PZEM for NodeMCU
 
 const char* ssid = "Fritz! Network";
 const char* password = "Oliver2016Artu2015";
-
+const char* type = "LAMP";
 double max_usage = 0.0;
 
 IPAddress serverIPAddress = NULL;
@@ -47,7 +47,7 @@ void setup() {
 
 void loop() {
   timer.tick();
-  timer.every(3000, check);
+  timer.every(5000, check);
   int packetSize = Udp.parsePacket();
   if (packetSize)
   {
@@ -89,7 +89,7 @@ void requestStrategy(const JsonObject& jsonDocument, const IPAddress& remoteIP, 
     serverIPAddress = IPAddress(remoteIP);
     //serverPort = remotePort;
     obj["act"] = "INIT";
-    obj["type"] = "DISHWASHER";
+    obj["type"] = type;
     obj["max_power_usage"] = max_usage;
     performMessage = true;
     obj["sts"] = digitalRead(RELAY);
@@ -132,6 +132,7 @@ bool check(void*) {
       StaticJsonDocument<200> doc;
       JsonObject obj = doc.createNestedObject();
       obj["act"] = "UPDATE";
+      obj["type"] = type;
       obj["active_power"] = active_power;
       Udp.beginPacket(serverIPAddress, serverPort);
       serializeJson(doc, Udp);
