@@ -1,1 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><plugs><plug><ip>192.168.1.41</ip><maxpower>40.0</maxpower><type>LAMP</type></plug><plug><ip>192.168.1.139</ip><maxpower>1900.0</maxpower><type>DISHWASHER</type></plug></plugs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><plugs><plug><ip>192.168.1.139</ip><maxpower>120.0</maxpower><type>TV</type></plug><plug><ip>192.168.1.41</ip><maxpower>40.0</maxpower><type>LAMP</type></plug></plugs>

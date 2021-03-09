@@ -76,7 +76,6 @@ public class ClientData {
 
     public void putClient(String address, JSONObject data) {
         clientsMap.put(address, data);
-        System.out.println(clientsMap.toString());  // TODO: remove this
         writeClient(address, data);  // saves map as string in file
     }
 
