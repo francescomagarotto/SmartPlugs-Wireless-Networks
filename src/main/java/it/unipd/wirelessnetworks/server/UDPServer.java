@@ -26,10 +26,9 @@ public class UDPServer {
     public static void main(String[] args) throws Exception {
         final Logger LOGGER = Logger.getLogger(UDPServer.class.getName());
         // lista sincronizzata client-pacchetto-ttl
-        List<ExpectedACK> expectedAcksList = Collections.synchronizedList(new ArrayList<>());
         INITSender initSender = new INITSender();
-        ACKResponder ackResponder = new ACKResponder(expectedAcksList);
-        RequestsService requestsService = new RequestsService(expectedAcksList);
+        ACKResponder ackResponder = new ACKResponder();
+        RequestsService requestsService = new RequestsService();
         requestsService.start();
         initSender.startAsync();
         ackResponder.startAsync();

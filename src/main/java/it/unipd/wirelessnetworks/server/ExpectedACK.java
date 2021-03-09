@@ -4,13 +4,13 @@ import java.net.DatagramPacket;
 
 public class ExpectedACK {
     public String clientAddress;
-    public int commandID;
+    public long timestamp;
     public DatagramPacket packetToResend;
     public int ttl;
 
-    public ExpectedACK(String address, int commandID, DatagramPacket packet, int ttl) {
+    public ExpectedACK(String address, long timestamp, DatagramPacket packet, int ttl) {
         this.clientAddress = address;
-        this.commandID = commandID;
+        this.timestamp = timestamp;
         this.packetToResend = packet;
         this.ttl = ttl;
     }
