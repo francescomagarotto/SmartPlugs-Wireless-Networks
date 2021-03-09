@@ -16,6 +16,7 @@ public class ServerCommands {
             status = 1;
         data.put("status", status);
         client.putClient(address, data);
+        // json to be sent to client
         JSONObject json = new JSONObject();
         json.put("act", onoff);
         try (DatagramSocket socket = new DatagramSocket()) {

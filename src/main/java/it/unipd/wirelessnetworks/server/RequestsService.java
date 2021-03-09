@@ -99,7 +99,7 @@ class RequestsService extends Thread /*implements Observer */{
 
                             currentWatt -= old_watts;
                             currentWatt += new_watts;
-                            if (currentWatt>=0) {
+                            if (new_watts>0) {
                                 statusAction = 1;
                             }
                             // in any case, update map data for client
