@@ -72,17 +72,23 @@ class RequestsService extends Thread /*implements Observer */{
                             // if there's no room for client reply with off (should the server w8 for ACK?),
                             // else, if change is negative check if more clients can connect
                             // comparing previous wattage to new wattage
+
                             LOGGER.info("[Server] Received UPDATE packet from Client: " + clientAddress);
                             LOGGER.info("[Message content] " + jsonObject.toString());
                             double new_watts = jsonObject.getDouble("active_power");
                             double old_watts = map.getClient(clientAddress).getDouble("watts");
-                            double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
-
                             double max_watts;
-                            if (new_watts > old_max_watts)
-                                max_watts = new_watts;
-                            else
-                                max_watts = old_max_watts;
+                            String type = jsonObject.getString("type");
+                            // if the device connected is of the same type, check if max power needs update, else set default for new type
+                            if (map.getClient(clientAddress).getString("type").equals(type)) {
+                                double old_max_watts = map.getClient(clientAddress).getDouble("max_power_usage");
+                                if (new_watts > old_max_watts)
+                                    max_watts = new_watts;
+                                else
+                                    max_watts = old_max_watts;
+                            } else {
+                                max_watts = wattsDeviceMap.get(jsonObject.getString("type"));
+                            }
 
                             currentWatt -= old_watts;
                             currentWatt += new_watts;
@@ -94,22 +100,25 @@ class RequestsService extends Thread /*implements Observer */{
                             updatedJson.put("status", statusAction);
                             updatedJson.put("watts", new_watts);
                             updatedJson.put("max_power_usage", max_watts);
+                            updatedJson.put("type", type);
                             map.putClient(clientAddress, updatedJson);
                             LOGGER.info("[Server] updated current power usage: " +currentWatt);
-                            //LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                         case "ACK":
                             // if an ACK is received, remove from list of expected ACKs
                             List<ExpectedACK> expectedAcksList = AckListSingleton.getInstance().getExpectedAckList();
-                            int listLen = expectedAcksList.size();
-                            long timestamp = jsonObject.getLong("timestamp");
+                            String timestamp = jsonObject.getString("timestamp");
                             LOGGER.info("[Server] Received ACK from: " + clientAddress);
                             Optional<ExpectedACK> optionalExpectedACK =
                                     expectedAcksList.stream().filter(
                                             expectedACK ->
                                                     expectedACK.clientAddress.equals(clientAddress)
-                                                            && expectedACK.timestamp == timestamp).findFirst();
-                            optionalExpectedACK.ifPresent(expectedAcksList::remove);
+                                                            && expectedACK.timestamp.equals(timestamp)).findFirst();
+                            if(optionalExpectedACK.isPresent()) {
+                                ExpectedACK e = optionalExpectedACK.get();
+                                AckListSingleton.getInstance().getExpectedAckList().remove(e);
+                                LOGGER.info("[Server] Removed " + e.toString());
+                            }
                             LOGGER.info("[Server] Status " + map.getAllClients().toString());
                             break;
                     }

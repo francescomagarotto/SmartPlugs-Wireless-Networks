@@ -32,6 +32,6 @@ public class ACKResponder extends AbstractScheduledService {
 
     @Override
     protected AbstractScheduledService.Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 1, TimeUnit.SECONDS);
+        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 2, TimeUnit.SECONDS);
     }
 }
