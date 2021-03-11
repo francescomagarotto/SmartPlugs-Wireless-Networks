@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.11)  11 MAR 2021 17:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.11)  11 MAR 2021 18:06
 entering extended mode
 **./main.tex
 (main.tex
@@ -303,7 +303,10 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Calculating math sizes for size <11> on input line 57.
 
-(main.bbl)
+(main.bbl [1{C:/Users/costa/AppData/Local/MiKTeX/pdftex/config/pdftex.map}
+
+
+])
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -315,27 +318,26 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[1{C:/Users/costa/AppData/Local/MiKTeX/pdftex/config/pdftex.map}
-
+[2
 
 ] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 3935 strings out of 479334
- 57873 string characters out of 2857084
+ 3923 strings out of 479334
+ 57758 string characters out of 2857084
  365212 words of memory out of 3000000
- 21354 multiletter control sequences out of 15000+200000
- 446854 words of font info for 115 fonts, out of 3000000 for 9000
+ 21347 multiletter control sequences out of 15000+200000
+ 443683 words of font info for 107 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,11n,74p,2513b,295s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 68i,11n,74p,2605b,295s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/bas
 e/8r.enc}<C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/ut
 mb8a.pfb><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/ut
 mbi8a.pfb><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/u
 tmr8a.pfb><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/u
 tmri8a.pfb>
-Output written on main.pdf (1 page, 57321 bytes).
+Output written on main.pdf (2 pages, 55700 bytes).
 PDF statistics:
- 23 PDF objects out of 1000 (max. 8388607)
+ 26 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
