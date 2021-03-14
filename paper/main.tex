@@ -67,7 +67,8 @@ In order to switch correctly the relay, the board waits for \textit{ON/OFF messa
 
 \subsection{Server}\label{SVR}
 \subsection{Web interface}\label{WI}
-
+The web interface is written in React using Bootstrap and exposes a way to interact with the server getting 
+a real-time power consumption for each device and managing the connected devices. It performs some to HTTP, so over TCP, to the API exposed by the server through the servlet, performing polling calls. The GUI as can we see in Figure \textbf{put figure here} presents a switch where the user can turn off or on the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled in order to avoid blackout.
 \section{System results}
 \section{Consumption}
 %Qui mettiamo workflow generale con immagine algoritmo 

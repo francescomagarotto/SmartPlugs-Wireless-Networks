@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.13)  14 MAR 2021 16:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.13)  14 MAR 2021 16:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -325,9 +325,7 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[2
-
- <./assets/pcb_schema.png>] (./main.aux)
+[2 <./assets/pcb_schema.png>] (./main.aux)
 
 LaTeX Warning: There were undefined references.
 
@@ -345,7 +343,7 @@ cal/texlive/2020basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/t
 exlive/2020basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texli
 ve/2020basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/20
 20basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (2 pages, 108438 bytes).
+Output written on main.pdf (2 pages, 109214 bytes).
 PDF statistics:
  31 PDF objects out of 1000 (max. 8388607)
  20 compressed objects within 1 object stream
