@@ -21,8 +21,8 @@
 \IEEEauthorblockN{Marco Costantino}
 \IEEEauthorblockA{\textit{Department of Mathematics} \\
 \textit{University of Padova}\\
-Padova, Italia \\
-marco.costantino1@studenti.unipd.it}
+Padova, Italy \\
+marco.costantino@studenti.unipd.it}
 \and
 \IEEEauthorblockN{Francesco Magarotto}
 \IEEEauthorblockA{\textit{Department of Mathematics} \\
@@ -50,14 +50,14 @@ The general architecture has 3 main components: the smart plugs, the server, and
 The smart plugs have been prototyped using Arduino. The module drives a sensor, needed to gather data on the power consumption and communicates with the UDP server 
 \par After describing some architectural design aspects,
 \subsection{Smart plugs}\label{SP}
-The smart plugs is a small hardware plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins.
+The smart plug is a small power plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and a coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins.
 The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost about €25, so it is not so expensive. 
-The WeMos D1 R2 board is equipped with a wireless module working at 2.4GHz called EPS 8266 and the wireless connection settings are hard coded in the software, since to store a configuration file an SD module and an SD card are needed. The board is programmed in C/C++ using Arduino IDE and uses an UDP library to create the packets which data are serialized using the JSON format.
+The WeMos D1 R2 board is equipped with a EPS 8266 wireless module operating at 2.4GHz. The connection settings are hardcoded in the software because storing it would require an SD module and an SD card. The board is programmed in C/C++ using Arduino IDE and uses the JSON format to serialize the data that will be sent, using a UDP library, to the server.
 In every Arduino-like board, there is a function which allows our program to wait for UDP package arrivals from the server, affecting the relay status.
-Another thread, once the board has recognized and registered the server, sends update periodically if there is a variation greater than the 10\% of the energy consumption.
-Firstly, smart plugs wait for an \textit{INIT message}, sent by the server via broadcast. Once the packet has been received, each plug saves the information about the server and is not replying to this type of messages for a certain amount of type, or until a hard reset is performed. 
-Then, the plug starts to send \textit{UPDATE messages} to inform the server about a energy consumption variation. To do so, a thread keeps watch over the readings provided by the PZEM sensor.
-In order to switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests has been received correctly, the correct action is performed and then a \textit{ACK message} is sent to inform the server about the successful receipt of the command.
+Another thread, once the board has recognized and registered the server, sends updates periodically if there is a variation greater than the 10\% of the energy consumption.
+First, smart plugs wait for an \textit{INIT message}, sent by the server via broadcast. Once the packet has been received, each plug saves the information about the server and is not replying to this type of messages for a certain amount of type, or until a hard reset is performed. 
+Then, the plug starts to send \textit{UPDATE messages} to inform the server about energy consumption variation. To do so, a thread keeps watch over the readings provided by the PZEM sensor.
+In order to switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests have been received correctly, the correct action is performed and then an \textit{ACK message} is sent to inform the server about the successful receipt of the command.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{assets/pcb_schema}
@@ -75,8 +75,8 @@ The server uses Tomcat and has been developed in Java 1.8 using Maven. It has th
 \end{itemize}
 The periodic actions, namely, sending the \textit{INIT message} and retransmitting those that are lost, are implemented as extensions of \textit{Guava's AbstractScheduledService} which allows performing of these at constant intervals. Another thread waits and manages the plugs' responses. When a plug responds to the \textit{INIT message} the server will register its information and estimate the max power consumption for the appliance connected to the plug. This value is simply based on average values for the given appliance type as found on Google. When a plug sends an \textit{UPDATE message} the server will update its registered information, most important: the current energy consumption and the max energy consumption. Finally, the server waits for the acknowledgments of previously sent messages. These messages are kept with a timestamp until an acknowledgment with the same timestamp is received. If a configurable number of seconds elapses before this happens the packet will be sent again. The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn ON or OFF any given plug. In this last case, a packet will be sent by the server and for it the server will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
 \subsection{Web interface}\label{WI}
-The web interface is written in React using Bootstrap and exposes a way to interact with the server getting 
-a real-time power consumption for each device and managing the connected devices. It performs some to HTTP, so over TCP, to the API exposed by the server through the servlet, performing polling calls. The GUI as can we see in Figure \textbf{put figure here} presents a switch where the user can turn off or on the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled in order to avoid blackout.
+The web interface is written in React using Bootstrap and exposes a way to interact with the server to get 
+the real-time power consumption for each plug and managing the connected devices. It performs some to HTTP, so over TCP, to the API exposed by the server through the servlet, performing polling calls. The GUI shown in Figure \textbf{put figure here} presents a switch where the user can turn on or off the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled in order to avoid a blackout.
 \section{System results}
 \section{Consumption}
 %Qui mettiamo workflow generale con immagine algoritmo 
