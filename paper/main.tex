@@ -66,6 +66,14 @@ In order to switch correctly the relay, the board waits for \textit{ON/OFF messa
 \end{figure}
 
 \subsection{Server}\label{SVR}
+The server uses Tomcat and has been developed in Java 1.8 using Maven. It has the following responsibilities:
+\begin{itemize}
+	\item It periodically broadcasts \textit{INIT messages} to let the plugs know its address;
+	\item It listens for connections and updates from the plugs;
+	\item It waits for acknowledgments from the plugs and, in case they are not received, it retransmits the lost packets;
+	\item It exposes servlets to let the web interface get information about the plugs and send \textit{ON/OFF messages}.
+\end{itemize}
+The periodic actions, namely, sending the \textit{INIT message} and retransmitting those that are lost, are implemented as extensions of \textit{Guava's AbstractScheduledService} which allows performing of these at constant intervals. Another thread waits and manages the plugs' responses. When a plug responds to the \textit{INIT message} the server will register its information and estimate the max power consumption for the appliance connected to the plug. This value is simply based on average values for the given appliance type as found on Google. When a plug sends an \textit{UPDATE message} the server will update its registered information, most important: the current energy consumption and the max energy consumption. Finally, the server waits for the acknowledgments of previously sent messages. These messages are kept with a timestamp until an acknowledgment with the same timestamp is received. If a configurable number of seconds elapses before this happens the packet will be sent again. The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn ON or OFF any given plug. In this last case, a packet will be sent by the server and for it the server will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
 \subsection{Web interface}\label{WI}
 The web interface is written in React using Bootstrap and exposes a way to interact with the server getting 
 a real-time power consumption for each device and managing the connected devices. It performs some to HTTP, so over TCP, to the API exposed by the server through the servlet, performing polling calls. The GUI as can we see in Figure \textbf{put figure here} presents a switch where the user can turn off or on the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled in order to avoid blackout.
