@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.13)  13 MAR 2021 23:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.13)  14 MAR 2021 16:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -307,7 +307,7 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 <assets/pcb_schema.png, id=1, 1173.38374pt x 831.105pt>
 File: assets/pcb_schema.png Graphic file (type png)
 <use assets/pcb_schema.png>
-Package pdftex.def Info: assets/pcb_schema.png  used on input line 60.
+Package pdftex.def Info: assets/pcb_schema.png  used on input line 63.
 (pdftex.def)             Requested size: 252.0pt x 178.48119pt.
  [1{/usr/local/texlive/2020basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
@@ -335,7 +335,7 @@ LaTeX Warning: There were undefined references.
 Here is how much of TeX's memory you used:
  3817 strings out of 482056
  55053 string characters out of 5937675
- 302389 words of memory out of 5000000
+ 303389 words of memory out of 5000000
  19483 multiletter control sequences out of 15000+600000
  563126 words of font info for 74 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
@@ -345,7 +345,7 @@ cal/texlive/2020basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/t
 exlive/2020basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texli
 ve/2020basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/20
 20basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (2 pages, 106664 bytes).
+Output written on main.pdf (2 pages, 108438 bytes).
 PDF statistics:
  31 PDF objects out of 1000 (max. 8388607)
  20 compressed objects within 1 object stream

@@ -53,8 +53,11 @@ The smart plugs have been prototyped using Arduino. The module drives a sensor, 
 The smart plugs is a small hardware plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins.
 The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost about €25, so it is not so expensive. 
 The WeMos D1 R2 board is equipped with a wireless module working at 2.4GHz called EPS 8266 and the wireless connection settings are hard coded in the software, since to store a configuration file an SD module and an SD card are needed. The board is programmed in C/C++ using Arduino IDE and uses an UDP library to create the packets which data are serialized using the JSON format.
-In every Arduino-like board, there is a function which allow our program to wait for UDP package arrivals from the server, affecting the relay status.
+In every Arduino-like board, there is a function which allows our program to wait for UDP package arrivals from the server, affecting the relay status.
 Another thread, once the board has recognized and registered the server, sends update periodically if there is a variation greater than the 10\% of the energy consumption.
+Firstly, smart plugs wait for an \textit{INIT message}, sent by the server via broadcast. Once the packet has been received, each plug saves the information about the server and is not replying to this type of messages for a certain amount of type, or until a hard reset is performed. 
+Then, the plug starts to send \textit{UPDATE messages} to inform the server about a energy consumption variation. To do so, a thread keeps watch over the readings provided by the PZEM sensor.
+In order to switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests has been received correctly, the correct action is performed and then a \textit{ACK message} is sent to inform the server about the successful receipt of the command.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{assets/pcb_schema}
