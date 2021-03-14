@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.11)  14 MAR 2021 17:30
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.11)  14 MAR 2021 19:10
 entering extended mode
 **./main.tex
 (main.tex
@@ -289,29 +289,35 @@ Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 )
+<assets/architecture_schema.png, id=1, 885.3075pt x 82.3075pt>
+File: assets/architecture_schema.png Graphic file (type png)
+<use assets/architecture_schema.png>
+Package pdftex.def Info: assets/architecture_schema.png  used on input line 51.
+
+(pdftex.def)             Requested size: 252.0pt x 23.42773pt.
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
-4.
+8.
 
 (C:\Users\costa\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-<assets/pcb_schema.png, id=1, 1173.38374pt x 831.105pt>
+<assets/pcb_schema.png, id=3, 1173.38374pt x 831.105pt>
 File: assets/pcb_schema.png Graphic file (type png)
 <use assets/pcb_schema.png>
-Package pdftex.def Info: assets/pcb_schema.png  used on input line 63.
+Package pdftex.def Info: assets/pcb_schema.png  used on input line 67.
 (pdftex.def)             Requested size: 252.0pt x 178.48119pt.
 
 [1{C:/Users/costa/AppData/Local/MiKTeX/pdftex/config/pdftex.map}
 
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 71.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 75.
 
 
 (C:\Users\costa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 71.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 75.
 
 
 (C:\Users\costa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
@@ -329,25 +335,26 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[2 <./assets/pcb_schema.png>] (main.aux) ) 
+[2 <./assets/architecture_schema.png> <./assets/pcb_schema.png>] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 3923 strings out of 479334
- 57852 string characters out of 2857084
- 365265 words of memory out of 3000000
- 21348 multiletter control sequences out of 15000+200000
+ 3932 strings out of 479334
+ 58125 string characters out of 2857084
+ 365742 words of memory out of 3000000
+ 21356 multiletter control sequences out of 15000+200000
  437053 words of font info for 86 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  68i,8n,74p,3612b,255s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Users/costa/AppData/Local/Program
-s/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/Users/costa/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/costa/AppData/Local/Prog
-rams/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/costa/AppData/Local/Prog
-rams/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/costa/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/costa/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (2 pages, 124981 bytes).
+{C
+:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/Use
+rs/costa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb
+><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb
+><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pf
+b><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pf
+b><C:/Users/costa/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.p
+fb>
+Output written on main.pdf (2 pages, 134028 bytes).
 PDF statistics:
- 33 PDF objects out of 1000 (max. 8388607)
+ 35 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
