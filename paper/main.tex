@@ -104,7 +104,7 @@ The server has been developed in Java 8 and managed using Maven. Tomcat is imple
 	\caption{Overview of server's logic for handling packets received by the plugs}
 	\label{fig:server_logic}
 \end{figure}
-The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it the server will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
+The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it the server will wait an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
 
 \subsection{Web interface}\label{WI}
 The web interface is written in React using Bootstrap and exposes a way to interact with the server to get 
