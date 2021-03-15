@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{spverbatim}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -55,12 +56,25 @@ The general architecture has three main components: the smart plugs, the server,
 
 \subsection{Smart plugs}\label{SP}
 The smart plug is a small power plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and a coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins.
-The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost about €15, so it is not so expensive. 
+The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost about €15, so it is not that expensive. 
 The WeMos D1 R2 board is equipped with a EPS 8266 wireless module operating at 2.4GHz. The connection settings are hardcoded in the software because storing it would require an SD module and an SD card. The board is programmed in C/C++ using Arduino IDE and uses the JSON format to serialize the data that will be sent, using a UDP library, to the server.
-In every Arduino-like board, there is a function which allows our program to wait for UDP package arrivals from the server, affecting the relay status.
+In every Arduino-like board, there is a function that allows our program to wait for UDP package arrivals from the server, affecting the relay status.
 Another thread, once the board has recognized and registered the server, sends updates periodically if there is a variation greater than the 10\% of the energy consumption.
 First, smart plugs wait for an \textit{INIT message}, sent by the server via broadcast. Once the packet has been received, each plug saves the information about the server and is not replying to this type of messages for a certain amount of type, or until a hard reset is performed. 
 Then, the plug starts to send \textit{UPDATE messages} to inform the server about energy consumption variation. To do so, a thread keeps watch over the readings provided by the PZEM sensor.
+The content of the packets is first defined as a JSON object and then serialized to the bytes that are the payload of the UDP packet. All of these packets have a field in common: \verb|act| this field can have as values:
+\begin{itemize}
+	\item \begin{spverbatim}"INIT"\end{spverbatim} when responding to the server's INIT packet;
+	\item \begin{spverbatim}"UPDATE"\end{spverbatim} when sending an update to the server;
+	\item \begin{spverbatim}"ACK"\end{spverbatim} when sending an acknowledgment to the server.
+\end{itemize}
+The \verb|"INIT"| packet contains three more fields:
+\begin{itemize}
+	\item \begin{spverbatim}"type"\end{spverbatim} indicates the type of appliance plugged;
+	\item \begin{spverbatim}"max_power_usage"\end{spverbatim} indicates how many watts the appliance is expected to consume;
+	\item \begin{spverbatim}"sts"\end{spverbatim} indicates if the status of the relay, \verb|0| for off, \verb|1| for on.
+\end{itemize}
+The \verb|UPDATE| packet has a \verb|type| field too, and has a field \verb|active_power| that is a reading of the currently consumed watts. Finally, the \verb|ACK| packet has the \verb|sts| field too, and has a field \verb|timestamp| which value is taken from the same field in the packet the plug received from the server.
 In order to switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests have been received correctly, the correct action is performed and then an \textit{ACK message} is sent to inform the server about the successful receipt of the command. 
 We also used a different board called NodeMcu V3 in order to simulate a plug to get a real traffic scenario with at least two plugs. Since, NodeMcu V3 is not connected to a PZEM module, the power consumption readings are random values.  
 \begin{figure}[htbp]
@@ -77,14 +91,20 @@ We also used a different board called NodeMcu V3 in order to simulate a plug to 
 \end{figure}
 
 \subsection{Server}\label{SVR}
-The server has been developed in Java 8 and managed using Maven. Tomcat is implemented to expose the servlet API. The server has the following responsibilities: to periodically broadcasts \textit{INIT messages} to let the plugs know its address; It listens for connections and updates from the plugs; it waits for acknowledgments from the plugs and, in case they are not received, it retransmits the lost packets; it exposes servlets to let the web interface get information about the plugs and send \textit{ON/OFF messages}. The periodic actions, namely, sending the \textit{INIT message} and retransmitting those that are lost, are implemented as extensions of \textit{Guava's AbstractScheduledService} which allows performing of these at constant intervals. Another thread waits and manages the plugs' responses. When a plug responds to the \textit{INIT message} the server will register its information and estimate the max power consumption for the appliance connected to the plug. This value is simply based on average values for the given appliance type as found on Google. When a plug sends an \textit{UPDATE message} the server will update its registered information, most important: the current energy consumption and the max energy consumption. Finally, the server waits for the acknowledgments of previously sent messages. These messages are kept with a timestamp until an acknowledgment with the same timestamp is received. If a configurable number of seconds elapses before this happens the packet will be sent again.
+The server has been developed in Java 8 and managed using Maven. Tomcat is implemented to expose the servlet API. The server has the following responsibilities: to periodically broadcasts \textit{INIT packets} to let the plugs know its address; It listens for connections and updates from the plugs; it waits for acknowledgments from the plugs and, in case they are not received, it retransmits the lost packets; it exposes servlets to let the web interface get information about the plugs and send \textit{ON/OFF packets}. The periodic actions, namely, sending the \textit{INIT packet} and retransmitting those that are lost, are implemented as extensions of \textit{Guava's AbstractScheduledService} which allows performing of these at constant intervals. Another thread waits and manages the plugs' responses. When a plug responds to the \textit{INIT packet} the server will register its information and estimate the max power consumption for the appliance connected to the plug. This value is simply based on average values for the given appliance type as found on Google. When a plug sends an \textit{UPDATE packet} the server will update its registered information, most important: the current energy consumption and the max energy consumption. Finally, the server waits for the acknowledgments of previously sent packets. These packets contain a timestamp which is sent back by the plugs in the acknowledgments. The server also has a list of packets waiting for acknowledgment, in this way when the server receives an ACK it can discard the packet with the given timestamp. If a configurable number of seconds elapses before this happens the packet will be sent again. Like the plugs, the server first defines the content of the packets it sends as JSON objects. All the packets sent by the server have a field: \verb|act| this field can have as values:
+\begin{itemize}
+	\item \begin{spverbatim}"INIT"\end{spverbatim} when broadcasting the INIT packet;
+	\item \begin{spverbatim}"ON"\end{spverbatim} when sending a plug the instruction to turn on;
+	\item \begin{spverbatim}"OFF"\end{spverbatim} when sending a plug the instruction to turn off.
+\end{itemize}
+\verb|ON| and \verb|OFF| packets also have a field \verb|timestamp| which contains a string representation of the long value returned by java's \verb|System.currentTimeMillis()|.  
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\linewidth]{assets/server_logic}
+	\includegraphics[width=\linewidth]{assets/server_logic}
 	\caption{Overview of server's logic for handling packets received by the plugs}
 	\label{fig:server_logic}
 \end{figure}
-The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn ON or OFF any given plug. In this last case, a packet will be sent by the server and for it the server will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
+The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it the server will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
 
 \subsection{Web interface}\label{WI}
 The web interface is written in React using Bootstrap and exposes a way to interact with the server to get 
@@ -97,7 +117,7 @@ the real-time power consumption for each plug and managing the connected devices
 \end{figure}
 
 \section{Methods}
-Throughout the development, the communication between server and the plug has been simulated and tested using PacketSender which is a tool that allow to send a configurable packet through the network. To check the system's traffic and the correct handling of acknowledgments, we used PacketSender to simulate the traffic generated by the plug but not the acknowledgments and Wireshark to filter the traffic by port and type and check the correct retransmition of packets by the server. Finally the entire system as been tested to check the correct transmission of acknowledgments by the plugs.
+Throughout the development, the communication between the server and the plug has been simulated and tested using PacketSender which is a tool that allows sending a configurable packet through the network. To check the system's traffic and the correct handling of acknowledgments, we used PacketSender to simulate the traffic generated by the plug but not the acknowledgments and Wireshark to filter the traffic by port and type and check the correct retransmission of packets by the server. Finally, the entire system has been tested to check the correct transmission of acknowledgments by the plugs.
 
 \section{System results}
 \section{Consumption}
