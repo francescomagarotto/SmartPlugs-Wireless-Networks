@@ -77,7 +77,7 @@ We also used a different board called NodeMcu V3 in order to simulate a plug to 
 \end{figure}
 
 \subsection{Server}\label{SVR}
-The server uses Tomcat and has been developed in Java 1.8 using Maven. It has the following responsibilities:
+The server has been developed in Java 8 and managed using Maven. Tomcat is implemented to expose the servlet API. The server has the following responsibilities:
 \begin{itemize}
 	\item It periodically broadcasts \textit{INIT messages} to let the plugs know its address;
 	\item It listens for connections and updates from the plugs;
