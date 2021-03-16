@@ -97,7 +97,7 @@ The server has been developed in Java 8 and managed using Maven. Tomcat is imple
 	\item \begin{spverbatim}"ON"\end{spverbatim} when sending a plug the instruction to turn on;
 	\item \begin{spverbatim}"OFF"\end{spverbatim} when sending a plug the instruction to turn off.
 \end{itemize}
-\verb|ON| and \verb|OFF| packets also have a field \verb|timestamp| which contains a string representation of the long value returned by java's \verb|System.currentTimeMillis()|.  
+\verb|ON| and \verb|OFF| packets also have a field \verb|timestamp| which contains a string representation of the timestamp.  
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{assets/server_logic}
@@ -120,11 +120,14 @@ Throughout the development, the communication between the server and the plug ha
 
 \section{System results}
 
-
-
 \section{Consumption}
 %Qui mettiamo workflow generale con immagine algoritmo 
 
+\section{Challenges}
+During the development, we found some issues outside the scope of this POC. Since the focus of the project wasn't on security we decided for ease of debugging to do not encrypt the packets exchanged between plugs and server. Also, we did not develop an authentication system to use the web interface. 
+
+\section{Conclusions}
+In the current day and age, we have the opportunity to make smart the most mundane objects. Smart plugs can be used to monitor energy consumption, give control to the user, and help the user reach a maximum consumption goal. These plugs can reliably operate using the UDP protocol provided there are some reliability checks at the application level and can do it in a busy home WLAN where traffic can be both TCP and UDP.
 
 %
 %\subsection{Maintaining the Integrity of the Specifications}
