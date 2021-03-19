@@ -10,36 +10,36 @@
 \usepackage{xcolor}
 \usepackage{spverbatim}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
-
+	
 \title{Wireless smart monitoring energy system: a proof of concept}
 {
-%\thanks{Identify applicable funding agency here. If none, delete this.}
+	%\thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
 \author{
-\IEEEauthorblockN{Marco Costantino}
-\IEEEauthorblockA{\textit{Department of Mathematics} \\
-\textit{University of Padova}\\
-Padova, Italy \\
-marco.costantino@studenti.unipd.it}
-\and
-\IEEEauthorblockN{Francesco Magarotto}
-\IEEEauthorblockA{\textit{Department of Mathematics} \\
-\textit{University of Padova}\\
-Padova, Italy \\
-francesco.magarotto@studenti.unipd.it}
+	\IEEEauthorblockN{Marco Costantino}
+	\IEEEauthorblockA{\textit{Department of Mathematics} \\
+		\textit{University of Padova}\\
+		Padova, Italy \\
+		marco.costantino@studenti.unipd.it}
+	\and
+	\IEEEauthorblockN{Francesco Magarotto}
+	\IEEEauthorblockA{\textit{Department of Mathematics} \\
+		\textit{University of Padova}\\
+		Padova, Italy \\
+		francesco.magarotto@studenti.unipd.it}
 }
 
 \maketitle
 
 \begin{abstract}
-This document describes a prototype of domotic smart plugs. The system developed includes the smart plugs, a server, and a web interface that allow the user to monitor the power consumption of each individual appliance connected and power them on and off remotely. Furthermore, the system, provided that its settings are correct, keeps the user from turning on enough appliances to trigger the circuit breaker. The prototype has been developed keeping in mind issues of power consumption and reliability of communication between components of the system while keeping the traffic light.
+	This document describes a prototype of domotic smart plugs. The system developed includes the smart plugs, a server, and a web interface that allow the user to monitor the power consumption of each individual appliance connected and power them on and off remotely. Furthermore, the system, provided that its settings are correct, keeps the user from turning on enough appliances to trigger the circuit breaker. The prototype has been developed keeping in mind issues of power consumption and reliability of communication between components of the system while keeping the traffic light.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Domotic plugs; Reliable UDP;
+	Domotic plugs; Reliable UDP;
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -55,7 +55,7 @@ The general architecture has three main components: the smart plugs, the server,
 \end{figure}
 
 \subsection{Smart plugs}\label{SP}
-The smart plug is a small power plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and a coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins.
+The smart plug is a small power plug which consists of a WeMos D1 R2 board, a 220v relay that can be controlled using 5 volts digital signals, and a coil connected to a PZEM-004T sensor which provides the readings to WeMos through its digital pins. The hardware has been chosen to be low-cost and accurate \cite{8442066}.
 The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost about €15, so it is not that expensive. 
 The WeMos D1 R2 board is equipped with a EPS 8266 wireless module operating at 2.4GHz. The connection settings are hardcoded in the software because storing it would require an SD module and an SD card. The board is programmed in C/C++ using Arduino IDE and uses the JSON format to serialize the data that will be sent, using a UDP library, to the server.
 In every Arduino-like board, there is a function that allows our program to wait for UDP package arrivals from the server, affecting the relay status.
@@ -75,7 +75,7 @@ The \verb|"INIT"| packet contains three more fields:
 	\item \begin{spverbatim}"sts"\end{spverbatim} indicates if the status of the relay, \verb|0| for off, \verb|1| for on.
 \end{itemize}
 The \verb|UPDATE| packet has a \verb|type| field too, and has a field \verb|active_power| that is a reading of the currently consumed watts. Finally, the \verb|ACK| packet has the \verb|sts| field too, and has a field \verb|timestamp| which value is taken from the same field in the packet the plug received from the server.
-In order to switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests have been received correctly, the correct action is performed and then an \textit{ACK message} is sent to inform the server about the successful receipt of the command. 
+To switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests have been received correctly, the correct action is performed and then an \textit{ACK message} is sent to inform the server about the successful receipt of the command. 
 We also used a different board called NodeMcu V3 in order to simulate a plug to get a real traffic scenario with at least two plugs. Since, NodeMcu V3 is not connected to a PZEM module, the power consumption readings are random values.  
 \begin{figure}[htbp]
 	\centering
@@ -107,7 +107,7 @@ The server has been developed in Java 8 and managed using Maven. Tomcat is imple
 The servlets simply allow the web interface to get the server's information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it the server will wait an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected and the max power consumption is also saved in a \textit{XML file} to avoid loosing it in case of a server malfunction or restart.
 
 \subsection{Web interface}\label{WI}
-The web interface is written in React using Bootstrap and exposes a way to interact with the server to get the real-time power consumption for each plug and managing the connected devices. The polling calls to the API exposed by the server through the servlets are performed over HTTP and thefore using the TCP protocol. The GUI shown in Figure~\ref{fig:simulatedwebapp} presents a switch where the user can turn on or off the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled in order to avoid a blackout.
+The web interface is written in React using Bootstrap and exposes a way to interact with the server to get the real-time power consumption for each plug and managing the connected devices. The polling calls to the API exposed by the server through the servlets are performed over HTTP and thefore using the TCP protocol. The GUI shown in Figure~\ref{fig:simulatedwebapp} presents a switch where the user can turn on or off the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled to avoid a blackout.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.7\linewidth]{assets/simulated_webapp}
@@ -116,7 +116,7 @@ The web interface is written in React using Bootstrap and exposes a way to inter
 \end{figure}
 
 \section{Methods}
-Throughout the development, the communication between the server and the plug has been simulated and tested using PacketSender. This tool allows the user to define the content of a packet in ASCII format, this is turned into bytes and sent to the specified address and port. For our tests, we specified the content of the packets by writing the JSON object in ASCII format, the type of packet (UDP), and the server address and port. In particular, we tested the system traffic and the correct handling of acknowledgments. To do this we used PacketSender to simulate the traffic generated by the plug but not the acknowledgments and Wireshark, a packet analyzer, to check the correct re-transmission of packets by the server by first filtering the traffic by port and type. The PZEM power monitor, according to \cite{9264926}, has an error rate based on the device characteristics, so we adopted different margin rates depending on the power consumption assigned to the device type. Finally, the entire system has been tested to check the correct transmission of acknowledgments by the plugs.
+Throughout the development, the communication between the server and the plug has been simulated and tested using PacketSender \cite{packetsender}. This tool allows the user to define the content of a packet in ASCII format, this is turned into bytes and sent to the specified address and port. For our tests, we specified the content of the packets by writing the JSON object in ASCII format, the type of packet (UDP), and the server address and port. In particular, we tested the system traffic and the correct handling of acknowledgments. To do this we used PacketSender to simulate the traffic generated by the plug but not the acknowledgments and Wireshark, a packet analyzer, to check the correct re-transmission of packets by the server by first filtering the traffic by port and type. The PZEM power monitor, according to \cite{9264926}, has an error rate based on the device characteristics, so we adopted different margin rates depending on the power consumption assigned to the device type. Finally, the entire system has been tested to check the correct transmission of acknowledgments by the plugs.
 
 \section{Challenges}
 During the development, we found some issues outside the scope of this POC. Since the focus of the project wasn't on security we decided for ease of debugging to do not encrypt the packets exchanged between plugs and server. Another issue is that the configuration of the plug is hard-coded, for example, the Wi-Fi SSID and password are stored as a char array in our C++ code. Since the EPS 8266 could switch to access point mode which means generate a new wireless network, a configuration procedure could be implemented. A device - such as a smartphone - could connect to the plug wireless network and send the SSID and password required by our home wireless settings. That information should be stored in a persistent drive - like a micro SD card.
@@ -138,5 +138,5 @@ In the current day and age, we have the opportunity to make smart the most munda
 
 \bibliography{references.bib}{}
 \bibliographystyle{IEEEtran}
-
+	
 \end{document}
