@@ -31,4 +31,29 @@ Y.~{Tong} and Z.~{Li}, ``Design of intelligent socket based on wifi,'' in
  [Online]. Available: \url{https://www.wireshark.org/docs/}
 \BIBentrySTDinterwordspacing
 
+\bibitem{8442052}
+T.~{Tantidham}, S.~{Ngamsuriyaros}, N.~{Tungamnuayrith}, T.~{Nildam},
+  K.~{Banthao}, and P.~{Intakot}, ``Energy consumption collection design for
+  smart building,'' in \emph{2018 International Conference on Embedded Systems
+  and Intelligent Technology International Conference on Information and
+  Communication Technology for Embedded Systems (ICESIT-ICICTES)}, 2018, pp.
+  1--6.
+
+\bibitem{8250475}
+S.~{Wasoontarajaroen}, K.~{Pawasan}, and V.~{Chamnanphrai}, ``Development of an
+  iot device for monitoring electrical energy consumption,'' in \emph{2017 9th
+  International Conference on Information Technology and Electrical Engineering
+  (ICITEE)}, 2017, pp. 1--4.
+
+\bibitem{8612412}
+K.~{Chooruang} and K.~{Meekul}, ``Design of an iot energy monitoring system,''
+  in \emph{2018 16th International Conference on ICT and Knowledge Engineering
+  (ICT KE)}, 2018, pp. 1--4.
+
+\bibitem{9264926}
+{Syafii}, A.~{Luthfi}, and Y.~A. {Rozzi}, ``Design of raspberry pi web-based
+  energy monitoring system for residential electricity consumption,'' in
+  \emph{2020 International Conference on Information Technology Systems and
+  Innovation (ICITSI)}, 2020, pp. 192--196.
+
 \end{thebibliography}
