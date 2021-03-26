@@ -31,6 +31,17 @@ Y.~{Tong} and Z.~{Li}, ``Design of intelligent socket based on wifi,'' in
  [Online]. Available: \url{https://www.wireshark.org/docs/}
 \BIBentrySTDinterwordspacing
 
+\bibitem{7884488}
+E.~{Irmak}, A.~{Köse}, and G.~{Göçmen}, ``Simulation and zigbee based
+  wireless monitoring of the amount of consumed energy at smart homes,'' in
+  \emph{2016 IEEE International Conference on Renewable Energy Research and
+  Applications (ICRERA)}, 2016, pp. 1019--1023.
+
+\bibitem{8612412}
+K.~{Chooruang} and K.~{Meekul}, ``Design of an iot energy monitoring system,''
+  in \emph{2018 16th International Conference on ICT and Knowledge Engineering
+  (ICT KE)}, 2018, pp. 1--4.
+
 \bibitem{8442052}
 T.~{Tantidham}, S.~{Ngamsuriyaros}, N.~{Tungamnuayrith}, T.~{Nildam},
   K.~{Banthao}, and P.~{Intakot}, ``Energy consumption collection design for
@@ -49,11 +60,6 @@ S.~{Wasoontarajaroen}, K.~{Pawasan}, and V.~{Chamnanphrai}, ``Development of an
 R.~Khwanrit, S.~Kittipiyakul, J.~Kudtonagngam, and H.~Fujita, ``Accuracy
   comparison of present low-cost current sensors for building energy
   monitoring,'' 05 2018, pp. 1--6.
-
-\bibitem{8612412}
-K.~{Chooruang} and K.~{Meekul}, ``Design of an iot energy monitoring system,''
-  in \emph{2018 16th International Conference on ICT and Knowledge Engineering
-  (ICT KE)}, 2018, pp. 1--4.
 
 \bibitem{packetsender}
 \BIBentryALTinterwordspacing

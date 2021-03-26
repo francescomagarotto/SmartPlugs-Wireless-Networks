@@ -16,45 +16,45 @@ Database file #1: references.bib
 Warning--empty booktitle in 8442066
 
 Done.
-You've used 8 entries,
+You've used 9 entries,
             4087 wiz_defined-function locations,
-            858 strings with 8789 characters,
-and the built_in function-call counts, 5157 in all, are:
-= -- 353
-> -- 114
-< -- 32
-+ -- 62
-- -- 20
-* -- 240
-:= -- 738
-add.period$ -- 14
-call.type$ -- 8
-change.case$ -- 6
-chr.to.int$ -- 78
-cite$ -- 9
-duplicate$ -- 385
-empty$ -- 502
-format.name$ -- 26
-if$ -- 1219
+            864 strings with 9036 characters,
+and the built_in function-call counts, 6122 in all, are:
+= -- 426
+> -- 136
+< -- 42
++ -- 76
+- -- 23
+* -- 284
+:= -- 862
+add.period$ -- 16
+call.type$ -- 9
+change.case$ -- 7
+chr.to.int$ -- 105
+cite$ -- 10
+duplicate$ -- 450
+empty$ -- 587
+format.name$ -- 30
+if$ -- 1455
 int.to.chr$ -- 0
-int.to.str$ -- 8
-missing$ -- 74
-newline$ -- 51
-num.names$ -- 6
-pop$ -- 219
+int.to.str$ -- 9
+missing$ -- 84
+newline$ -- 54
+num.names$ -- 7
+pop$ -- 245
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 396
+skip$ -- 473
 stack$ -- 0
-substring$ -- 188
-swap$ -- 264
-text.length$ -- 6
+substring$ -- 252
+swap$ -- 319
+text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 5
-type$ -- 8
+type$ -- 9
 warning$ -- 1
-while$ -- 24
-width$ -- 9
-write$ -- 89
+while$ -- 28
+width$ -- 10
+write$ -- 98
 (There was 1 warning)
