@@ -49,13 +49,43 @@
 	Different designs have been proposed for this kind of application. In \cite{7884488} a wireless sensor network is implemented using ZigBee, which is more indicated for IoT scenarios. In \cite{8612412}, \cite{8110428} the communication protocol used is TCP over wireless. In our POC, we use UDP over a wireless connection. The theoretical advantage of using UDP is that we avoid the TCP overhead that is not needed in this kind of application, however, since the traffic generated is so little, empirical evidence of this advantage may only be manifest within a system with a large number of smart plugs connected. Differently from other proposed works, on top of the energy monitoring system, we implement a mechanism that keeps the user from exceeding a configurable maximum power usage. 
 	
 	\section{State of the Art}
-	Smart plugs with power consumption detection are commonly used in the same household scenarios, but they implement different workflows and protocols. In fact, usually to realize these IoT devices an external platform is integrated with the main board (Arduino, Raspberry Pi, generic boards with EPS 8266) . In most cases, this platform is Blynk, which is a hardware-agnostic IoT platform and allows to configure our board in many different ways.
-	The user could use the cloud infrastructure provided by the Blynk company, or, since the source code is open-source, download and install their own server. 
-	This latter scenario is the preferred one since is free, and consist of the Blink server, the blink app and the smart devices, which uses Blynk API to perform the connections. A Blynk installation is generic-purpose, so you could install and control different types of devices and show the measurements using only the TCP protocols. Anyway, app user interface needs to be customized and the server needs a database, so the configuration requires much time. Instead, our system - as described in the following paragraphs - has a different goal and provides essential features to manage the smart plugs. The aim of our project is to create a functional IoT system which avoids blackouts and in the meantime has a low impact on the wireless network using a modified version of the UDP protocol.
-	Although, Blynk implements some security feature which makes it more secure respect to our system.  
+	Smart plugs with power consumption detection are commonly
+	used in the same household scenarios, but they implement
+	different workflows and protocols. Usually to
+	realize these IoT devices an external platform is integrated
+	with the main-board (Arduino, Raspberry Pi, generic boards
+	with EPS 8266). In most cases, this platform is Blynk, which
+	is a hardware-agnostic IoT platform and allows us to configure
+	our board in many different ways. The user could use the
+	cloud infrastructure provided by the Blynk company, or, since
+	the source code is open-source, download and install their server. This latter scenario is the preferred one since is free
+	and consists of the Blink server, the blink app, and the smart
+	devices, which use Blynk API to perform the connections. A
+	Blynk installation is generic-purpose, so you could install and
+	control different types of devices and show the measurements
+	using only the TCP protocols. Anyway, the app user interface
+	needs to be customized and the server needs a database, so
+	the configuration requires much time. Instead, our system -
+	as described in the following paragraphs - has a different goal
+	and provides essential features to manage the smart plugs. Our project aims to create a functional IoT system that
+	avoids blackouts and in the meantime has a low impact on
+	the wireless network using a modified version of the UDP
+	protocol. Although, Blynk implements some security feature
+	which makes it more secure respect to our system.
 
 	\section{General architecture}
-	The general architecture has three main components: the smart plugs, the server, and the web interface. The smart plugs code have been written using Arduino IDE in C++. Instead, the server has been developed in Java and the web interface is written in React. The rundown of what each part does is made up of a WeMos D1 R2, an Arduino-like board, monitors a sensor that gathers data on the power consumption, and controls a relay that turns on or off the appliance. It communicates over wireless with the UDP server that keeps track of the plugs and their energy consumption. The web interface uses an API exposed by the server to let the user see and control the status of each plug.
+	The general architecture, represented in Figure~\ref{fig:architecture_schema}, has three main components: the
+	smart plugs, the server, and the web interface. The smart
+	plugs code has been written using Arduino IDE in C++.
+	Instead, the server has been developed in Java and the web
+	interface is written in React. The rundown of what each part
+	does is made up of a WeMos D1 R2, an Arduino-like board,
+	monitors a sensor that gathers data on the power consumption,
+	and controls a relay that turns on or off the appliance. It
+	communicates over wireless with the UDP server that keeps
+	track of the plugs and their energy consumption. The web
+	interface uses an API exposed by the server to let the user see
+	and control the status of each plug.
 	\begin{figure}[htbp]
 		\centering
 		\includegraphics[width=\linewidth]{assets/architecture_schema}
@@ -65,12 +95,12 @@
 	
 	\subsection{Smart plugs}\label{SP}
 	The smart plug is a small power plug that consists of a WeMos D1 R2 board, a 220v relay that can be controlled using digital signals, and a coil connected to a PZEM-004T sensor \cite{8442052} \cite{8250475}  which provides the readings to WeMos through its digital pins. The hardware has been chosen to be low-cost and accurate \cite{8442066}.
-	The connection scheme is represented in Figure~\ref{fig:pcbschema}, and has a cost of about €15, so it is not that expensive. The smart plug can be seen in Figure~\ref{fig:img5348}.
-	The WeMos D1 R2 board is equipped with a EPS 8266 wireless module operating at 2.4GHz. The connection settings are hardcoded in the software because storing it would require an SD module and an SD card. The board is programmed in C/C++ using Arduino IDE and uses the JSON format to serialize the data that will be sent, using a UDP library, to the server.
+	The connection scheme is represented in Figure~\ref{fig:pcbschema} and has a cost of about €15, so it is not that expensive. The smart plug can be seen in Figure~\ref{fig:img5348}.
+	The WeMos D1 R2 board is equipped with an EPS 8266 wireless module operating at 2.4GHz. The connection settings are hard-coded in the software because storing it would require an SD module and an SD card. The board is programmed in C/C++ using Arduino IDE and uses the JSON format to serialize the data that will be sent, using a UDP library, to the server.
 	In every Arduino-like board, there is a function that allows our program to wait for UDP package arrivals from the server, affecting the relay status.
-	Another thread, once the board has recognized and registered the server, sends updates periodically if there is a variation greater than the 10\% of the energy consumption.
+	Another thread, once the board has recognized and registered the server, sends updates periodically if there is a variation greater than 10\% of the energy consumption.
 	First, smart plugs wait for an \textit{INIT message}, sent by the server via broadcast. Once the packet has been received, each plug saves the information about the server and is not replying to this type of message for a certain amount of time, or until a hard reset is performed. 
-	Then, the plug starts to send \textit{UPDATE messages} to inform the server about energy consumption variation. To do so, a thread keeps watch over the readings provided by the PZEM sensor which integrates an ADC  system  in one integrated circuit \cite{8612412}.
+	Then, the plug starts to send \textit{UPDATE messages} to inform the server about energy consumption variation. To do so, a thread keeps watching over the readings provided by the PZEM sensor which integrates an ADC  system  in one integrated circuit \cite{8612412}.
 	A summary of the interactions between plug and server is given in Figure~\ref{fig:plugserverinteraction}.
 	The content of the packets is first defined as a JSON object and then serialized to the bytes that are the payload of the UDP packet. All of these packets have a field in common: \verb|act| this field can have as values:
 	\begin{itemize}
@@ -86,7 +116,7 @@
 	\end{itemize}
 	The \verb|UPDATE| packet has a \verb|type| and \verb|active_power| fields. This latter is the last watt usage read at time $t$. Finally, the \verb|ACK| packet has the \verb|timestamp| filed, which value is taken from the same field in the plug UDP packet received from the server as a unique identifier for that packet.
 	To switch correctly the relay, the board waits for \textit{ON/OFF messages} from the server. After those requests have been received correctly, the correct action is performed and then an \textit{ACK message} is sent to inform the server about the successful receipt of the command. 
-	We also used a different board called NodeMcu V3 in order to simulate a plug to get a real traffic scenario with at least two plugs. Since, NodeMcu V3 is not connected to a PZEM module, the power consumption readings are random values.  
+	We also used a different board called NodeMcu V3 to simulate a plug to get a real traffic scenario with at least two plugs. Since NodeMcu V3 is not connected to a PZEM module, the power consumption readings are random values.  
 	\begin{figure}[htbp]
 		\centering
 		\includegraphics[width=\linewidth]{assets/pcb_schema}
@@ -101,7 +131,7 @@
 	\end{figure}
 	\begin{figure}[htbp]
 		\centering
-		\includegraphics[width=0.7\linewidth]{assets/plugserverinteraction}
+		\includegraphics[width=\linewidth]{assets/plugserverinteraction}
 		\caption{Interaction between smart plugs and server}
 		\label{fig:plugserverinteraction}
 	\end{figure}
@@ -119,7 +149,7 @@
 		\caption{Overview of server's logic for handling packets received by the plugs}
 		\label{fig:server_logic}
 	\end{figure}
-	The servlets simply allow the web interface to get the server information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it, and this latter will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected, and the max power consumption is also saved in a \textit{XML file} to avoid losing it in case of a server malfunction or restart.
+	The servlets simply allow the web interface to get the server information about the plugs (the type of appliance connected, the current energy consumption, and more) and to turn on or off any given plug. In this last case, a packet will be sent by the server and for it, and this latter will wait for an acknowledgment. The information about the plugs saved by the server is kept as a \textit{thread-safe hashmap}. Some of this information, such as the IP address of the plugs, the type of appliance connected, and the max power consumption is also saved in an \textit{XML file} to avoid losing it in case of a server malfunction or restart.
 	
 	\subsection{Web interface}\label{WI}
 	The web interface is written in React using Bootstrap and exposes a way to interact with the server to get the real-time power consumption for each plug and managing the connected devices. The polling calls to the API exposed by the server through the servlets are performed over HTTP and therefore using the TCP protocol. The GUI shown in Figure~\ref{fig:simulatedwebapp} presents a switch where the user can turn on or off the plug. If there is not enough energy available to turn on a device, the switch will be displayed as disabled to avoid a blackout.
@@ -137,20 +167,20 @@
 	During the development, we found some issues outside the scope of this POC. Since the focus of the project was not on security we decided for ease of debugging to do not encrypt the packets exchanged between plugs and server. Another issue is that the configuration of the plug is hard-coded, for example, the Wi-Fi SSID and password are stored as a char array in our C++ code. Since the EPS 8266 could switch to access point mode which means generate a new wireless network, a configuration procedure could be implemented. A device - such as a smartphone - could connect to the plug wireless network and send the SSID and password required by our home wireless settings. That information should be stored in a persistent drive - like a micro SD card.
 	\section{Security issues}
 	As we already mentioned, another challenge to face is the security issue, the information sent from a plug to the server is completely clear, so there is no encryption implemented. 
-	In fact, our aim is to create a smart system and for debugging purpose is more convenient to use un-encrypted packets.
-	 The following paragraphs describes different attacks which we have implemented or could be performed quite easily.
+	In fact, we aim to create a smart system and for debugging purpose is more convenient to use un-encrypted packets.
+	The following paragraphs describe different attacks which we have implemented or could be performed quite easily.
 	\subsection{Fake plugs}
-	A fake plug could be easily added to our system sending fake readings. In our scenario this could be a problem, because could lead to a different behavior.
-	If an attacker uses a fake plug could send a random value to the system avoiding the user to turn on the correct device, considering that the system sums the energy consumption to prevent blackouts. An authentication mechanism, for example using a token validation procedure, could be implemented to recognize and guarantee the access to authorized devices. An example of fake plug is the NodeMcu V3, which is used for debugging purpose, but from a different point of view could be see a malicious device and be a problem in a real scenario. We used the NodeMcu V3 board to perform this attack, and since it is a high level threat an authentication procedure is required.
+	A fake plug could be easily added to our system sending fake readings. In our scenario, this could be a problem, because could lead to different behavior.
+	If an attacker uses a fake plug could send a random value to the system avoiding the user to turn on the correct device, considering that the system sums the energy consumption to prevent blackouts. An authentication mechanism, for example using a token validation procedure, could be implemented to recognize and guarantee access to authorized devices. An example of a fake plug is the NodeMcu V3, which is used for debugging purpose, but from a different point of view could be seen as a malicious device and be a problem in a real scenario. We used the NodeMcu V3 board to perform this attack, and since it is a high-level threat an authentication procedure is required.
 	\subsection{Man in the middle}
-	A man in the middle attack could proxy the UDP traffic and change packets contents - such as the measurements or ON/OFF commands. 
+	A man in the middle attack could proxy the UDP traffic and change the content of packets - such as the measurements or ON/OFF commands. 
 	An attacker could even change the source IP address field of some INIT packets, and so the plugs would connect to the attacker server.
 	Some tools, such as Scapy which is a Python library, allow to capture, modify and forward packets. Our system would not be able to detect that the packet has been modified, 
-	also because the UDP checksum is not enabled and so, the integrity of header and payload is not guarantee.
-	
+	also because the UDP checksum is not enabled and so, the integrity of the header and payload is not guaranteed.
+	\subsection{Creating interference using a magnet}
+	This last threat consists of using a magnet and gets it closer to the coil. The coil generates an electromagnetic field to measure the power consumption and using the magnets the measurements may change due to interference. This kind of attack works if there is no housing to protect the socket, and therefore also the coil. By using it, the magnet will not be able to alter the measurements. This all depends on the size of the magnet used, since we tried with a very small one and, pushing it away a little, there were no effects on the measurement. In the end, this attack is an open-ended question and needs further investigation.  
 	\section{System results}
-	Generally, TCP traffic worsens the performances of UDP in wireless applications. To check that this is not the case with our system,
-	we used Wireshark to monitor our network while it was running. In particular, during the test, we had both TCP and UDP third-party traffic, in particular, we had an Apex Legends game (UDP) and normal web navigation (TCP). The main objective of the test was to check the efficacy of our version of reliable UDP, so the focus was on the reception of acknowledgments by the server. The packets are sent to the correct client, even in a scenario with different traffic types. The traffic generated by the system is not much as can be seen in Figure~\ref{fig:grafico}. While the test was successful, it only had two plugs, one of them simulated. To achieve more realistic results the simulated plug generates more traffic than a real plug. 
+	Generally, TCP traffic worsens the performances of UDP in wireless applications. To check that this is not the case with our system, we used Wireshark to monitor our network while it was running to evaluate the impact of our traffic. During the test, we had both TCP and UDP third-party traffic, in particular, we had an Apex Legends game (UDP) and normal web navigation (TCP). The main objective of the test was to check the efficacy of our version of reliable UDP, so the focus was on the reception of acknowledgments by the server. The packets are sent to the correct client, even in a scenario with different traffic types. The traffic generated by the system is not much as can be seen in Figure~\ref{fig:grafico}. While the test was successful, it only had two plugs, one of them simulated. To achieve more realistic results the simulated plug generates more traffic than a real plug
 
 	\begin{figure}[htbp]
 		\centering
